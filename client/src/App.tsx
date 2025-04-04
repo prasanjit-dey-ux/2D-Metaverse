@@ -1,5 +1,5 @@
 import LandingPage from "./Pages/LandingPage/LandingPage.tsx";
-import SignUp from "./Pages/SignUp/SignUp.tsx";
+import SignIn from "./Pages/SignUp/SignIn.tsx";
 import { Route, Routes } from "react-router-dom";
 
 function App() {
@@ -8,7 +8,7 @@ function App() {
       <Routes>
         <Route path="*" element={<LandingPage />} />
         <Route path="/" element={<LandingPage />} />
-        <Route path="/SignUp" element={<SignUp />} />
+        <Route path="/signin" element={<SignIn />} />
       </Routes>
     </>
   );
