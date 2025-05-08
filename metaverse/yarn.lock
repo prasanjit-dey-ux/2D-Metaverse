@@ -181,12 +181,13 @@
     fastq "^1.6.0"
 
 "@repo/eslint-config@file:D:\\Programs\\Web Development\\Programming Hub\\Personal Projects\\Practice\\2D-Metaverse\\metaverse\\packages\\eslint-config":
-  resolved "file:packages/eslint-config"
+  resolved "git+ssh://git@github.com/packages/eslint-config.git"
 
 "@repo/typescript-config@file:D:\\Programs\\Web Development\\Programming Hub\\Personal Projects\\Practice\\2D-Metaverse\\metaverse\\packages\\typescript-config":
-  resolved "file:packages/typescript-config"
+  resolved "git+ssh://git@github.com/packages/typescript-config.git"
 
 "@repo/ui@file:D:\\Programs\\Web Development\\Programming Hub\\Personal Projects\\Practice\\2D-Metaverse\\metaverse\\packages\\ui":
+  resolved "git+ssh://git@github.com/packages/ui.git"
 
 "@swc/counter@0.1.3":
   version "0.1.3"
@@ -921,6 +922,10 @@ data-view-byte-offset@^1.0.1:
     call-bound "^1.0.2"
     es-errors "^1.3.0"
     is-data-view "^1.0.1"
+
+"db@file:D:\\Programs\\Web Development\\Programming Hub\\Personal Projects\\Practice\\2D-Metaverse\\metaverse\\packages\\db":
+  version "1.0.0"
+  resolved "file:packages/db"
 
 debug@^4.3.1, debug@^4.3.2, debug@^4.3.4, debug@^4.3.5, debug@^4.4.0, debug@4:
   version "4.4.0"
@@ -1740,6 +1745,7 @@ http-proxy-agent@^7.0.0, http-proxy-agent@^7.0.1:
   dependencies:
     "@types/express" "^5.0.1"
     express "^5.1.0"
+    typescript "^5.8.3"
 
 https-proxy-agent@^7.0.6:
   version "7.0.6"
