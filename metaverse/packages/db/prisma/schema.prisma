@@ -24,6 +24,14 @@ model User {
   avatar      Avatar?  @relation(fields: [avatarId], references: [id])
 }
 
+model Otp {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
 model Space {
   id        String  @id @unique @default(cuid())
   name      String
