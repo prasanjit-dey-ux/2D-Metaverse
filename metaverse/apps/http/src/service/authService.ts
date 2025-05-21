@@ -1,9 +1,10 @@
 import { RequestOtpInput, VerifyOtpInput } from "../types/authSchema.js";
 import client from "@metaverse/db/client"
-import { generateOtp } from "@metaverse/utils";
+import { generateOtp, generateUniqueTag } from "@metaverse/utils";
 import { sendOtpEmail } from "@metaverse/email";
 import { isBefore } from "date-fns";
 import { generateJWT } from "@metaverse/utils";
+
 
 
 export const requestOtpInput = async (input: RequestOtpInput) => {
@@ -44,7 +45,7 @@ export const verifyOtpInput = async (input: VerifyOtpInput) => {
     }
 
     if(dbOtp.code !== otp) {
-        throw new Error("Invalide OTP.");
+        throw new Error("Invalid OTP.");
     }
 
     // Optionally delete or clean up old OTPs
@@ -65,6 +66,7 @@ export const verifyOtpInput = async (input: VerifyOtpInput) => {
         data: {
             email, 
             username: email ,
+            tag: await generateUniqueTag(email),
         },
     });
 
