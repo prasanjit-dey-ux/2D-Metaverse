@@ -10,18 +10,18 @@ authRouter.post("/email/verify-otp", verifyOtp);
 
 // OAuth routes
 
-authRouter.get("/oauth/google", (req, res) => {
+authRouter.get("/google", (req, res) => {
     res.json({ message: "Google OAuth not implemented yet" });
 });
 
-authRouter.get("/oauth/github", (req, res) => {
+authRouter.get("/github", (req, res) => {
     res.json({ message: "GitHub OAuth not implemented yet" });
 });
 
-authRouter.get("/oauth/google/callback", (req, res) => {
+authRouter.get("/google/callback", (req, res) => {
     res.json({ message: "Google OAuth callback not implemented yet" });
 });
 
-authRouter.get("/oauth/github/callback", (req, res) => {
+authRouter.get("/github/callback", (req, res) => {
     res.json({ message: "GitHub OAuth callback not implemented yet" });
 });
