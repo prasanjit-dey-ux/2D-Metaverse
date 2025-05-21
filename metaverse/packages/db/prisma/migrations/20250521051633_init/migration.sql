@@ -6,8 +6,13 @@ CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "username" TEXT NOT NULL,
+    "tag" TEXT NOT NULL,
+    "displayName" TEXT,
+    "profileImageUrl" TEXT,
+    "bannerImageUrl" TEXT,
     "avatarId" TEXT,
     "role" "Role" NOT NULL DEFAULT 'User',
+    "isProfileComplete" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -93,7 +98,7 @@ CREATE UNIQUE INDEX "User_id_key" ON "User"("id");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+CREATE UNIQUE INDEX "User_username_tag_key" ON "User"("username", "tag");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Space_id_key" ON "Space"("id");

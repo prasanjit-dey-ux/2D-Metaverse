@@ -17,6 +17,7 @@
     "@types/node": "^22.15.3"
   },
   "dependencies": {
+    "@metaverse/db": "workspace:*",
     "jsonwebtoken": "^9.0.2"
   }
 }
