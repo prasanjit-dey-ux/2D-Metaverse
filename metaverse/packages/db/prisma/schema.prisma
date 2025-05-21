@@ -26,6 +26,7 @@ model User {
   space               Space[]
   isProfileComplete   Boolean  @default(false)
   avatar              Avatar?  @relation(fields: [avatarId], references: [id])
+  provider            AuthProvider @default(EMAIL) 
 
   @@unique([username, tag])
 }
@@ -98,3 +99,9 @@ enum Role {
   Admin
   User
 } 
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  GITHUB
+}
