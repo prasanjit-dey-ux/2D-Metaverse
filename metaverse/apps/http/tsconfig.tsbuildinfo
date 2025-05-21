@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/controllers/authController.ts","./src/routes/v1/adminRouter.ts","./src/routes/v1/authRouter.ts","./src/routes/v1/avatarRouter.ts","./src/routes/v1/elementRouter.ts","./src/routes/v1/index.ts","./src/routes/v1/spaceRouter.ts","./src/routes/v1/userRouter.ts","./src/service/authService.ts","./src/types/authSchema.ts"],"version":"5.8.3"}
