@@ -1,10 +1,11 @@
 import { RequestOtpInput, VerifyOtpInput } from "../types/authSchema.js";
-import client from "@metaverse/db/client"
+import client, {AuthProvider} from "@metaverse/db/client"
 import { generateOtp, generateUniqueTag } from "@metaverse/utils";
 import { sendOtpEmail } from "@metaverse/email";
 import { isBefore } from "date-fns";
 import { generateJWT } from "@metaverse/utils";
 
+import { OAuth2Client } from "google-auth-library";
 
 
 export const requestOtpInput = async (input: RequestOtpInput) => {
@@ -81,6 +82,77 @@ export const verifyOtpInput = async (input: VerifyOtpInput) => {
         token
     };
 };
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+export const googleAuthService = async (idToken: string) => {
+    const ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+
+    if(!payload || !payload.email|| !payload.sub) {
+        throw new Error("Invalid Google token");
+    }
+
+    const {email, sub, name, picture} = payload;
+
+    // Check for existing user using provider + providerId
+    let user = await client.user.findUnique({
+        where: {
+            provider_providerId: {
+                provider: AuthProvider.GOOGLE,
+                providerId: sub,
+            }
+        }
+    });
+
+    // If not dound, fall back to email based match (in case user signed up with OTP before)
+    if (!user) {
+        user = await client.user.findUnique({ where: { email }});
+
+        if (user) {
+            // Update to mark as Google User
+            user = await client.user.update({
+                where: { email },
+                data: {
+                    provider: AuthProvider.GOOGLE,
+                    providerId: sub,
+                    displayName: name ?? user.displayName,
+                    profileImageUrl: picture ?? user.profileImageUrl,
+                },
+            });
+        } else {
+            // create new Google user
+            user = await client.user.create({
+                data: {
+                    email,
+                    username: email,
+                    tag: await generateUniqueTag(email),
+                    displayName: name ?? email,
+                    profileImageUrl: picture ?? undefined,
+                    provider: AuthProvider.GOOGLE,
+                    providerId: sub,
+                },
+            });
+
+        }
+    }
+
+    const token = generateJWT(user.id);
+
+    return {
+        success: true,
+        message: "Google login successful",
+        user,
+        token
+    };
+
+};
+
+
 
 
 

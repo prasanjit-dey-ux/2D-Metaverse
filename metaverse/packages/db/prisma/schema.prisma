@@ -14,21 +14,23 @@ datasource db {
 }
 
 model User {
-  id                  String  @id @unique @default(cuid())
-  email               String  @unique
+  id                  String          @id @unique @default(cuid())
+  email               String          @unique
   username            String  
   tag                 String
   displayName         String?
   profileImageUrl     String?
   bannerImageUrl      String?
   avatarId            String? 
-  role                Role     @default(User)
+  role                Role            @default(User)
   space               Space[]
-  isProfileComplete   Boolean  @default(false)
-  avatar              Avatar?  @relation(fields: [avatarId], references: [id])
-  provider            AuthProvider @default(EMAIL) 
+  isProfileComplete   Boolean         @default(false)
+  avatar              Avatar?         @relation(fields: [avatarId], references: [id])
+  provider            AuthProvider    @default(EMAIL) 
+  providerId          String?         @unique
 
   @@unique([username, tag])
+  @@unique([provider, providerId])
 }
 
 model Otp {

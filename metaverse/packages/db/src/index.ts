@@ -1,3 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, AuthProvider } from "@prisma/client";
 
 export default new PrismaClient();
+export { AuthProvider };
