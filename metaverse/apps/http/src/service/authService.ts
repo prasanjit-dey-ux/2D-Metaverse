@@ -4,7 +4,7 @@ import { generateOtp, generateUniqueTag } from "@metaverse/utils";
 import { sendOtpEmail } from "@metaverse/email";
 import { isBefore } from "date-fns";
 import { generateJWT } from "@metaverse/utils";
-
+import axios from "axios";
 import { OAuth2Client } from "google-auth-library";
 
 
@@ -150,6 +150,98 @@ export const googleAuthService = async (idToken: string) => {
         token
     };
 
+};
+
+export const githubAuthService = async (code: string) => {
+    // exchange code for access token
+    const tokenRes = await axios.post(
+        "https://github.com/login/oauth/access_token",
+        {
+            client_id: process.env.GITHUB_CLIENT_ID,
+            client_secret: process.env.GITHUB_CLIENT_SECRET,
+            code,
+        },
+        {
+            headers: {
+                Accept: "application/json",
+            },
+        }
+    );
+
+    const accessToken = tokenRes.data.access_token;
+    if (!accessToken) throw new Error("Failed to get Github access token");
+
+    // Get user profile info from github
+    const profileRes = await axios.get("https://api.github.com/user", {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+
+    const emailRes = await axios.get("https://api.github.com/user/emails", {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+
+    const primaryEmail = emailRes.data.find((e: any) => e.primary)?.email;
+    if (!primaryEmail) throw new Error("Primary email not found");
+
+    const { login, id: githubId, name, avatar_url } = profileRes.data;
+
+    // Find or create user
+    let user = await client.user.findUnique({
+        where: {
+            provider_providerId: {
+                provider: AuthProvider.GITHUB,
+                providerId: githubId.toString(),
+            },
+        },
+    });
+
+    if (!user) {
+        // Fallback: user exist by email (signed up with OTP or Google)
+        user = await client.user.findUnique({
+            where: {
+                email: primaryEmail
+            }
+        });
+
+        if (user) {
+            user = await client.user.update({
+                where: { 
+                    email: primaryEmail
+                },
+                data: {
+                    provider: AuthProvider.GITHUB,
+                    providerId: githubId.toString(),
+                    displayName: name ?? user.displayName,
+                    profileImageUrl: avatar_url ?? user.profileImageUrl,
+                },
+            });
+        } else {
+            user = await client.user.create({
+                data: {
+                    email: primaryEmail,
+                    username: login,
+                    tag: await generateUniqueTag(login),
+                    displayName: name ?? login,
+                    profileImageUrl : avatar_url,
+                    provider: AuthProvider.GITHUB,
+                    providerId: githubId.toString(),
+                },
+            });
+        }
+    }
+    
+    const token = generateJWT(user.id);
+
+    return{
+        success: true,
+        message: "Github login successful",
+        user,
+        token
+    };
 };
 
 

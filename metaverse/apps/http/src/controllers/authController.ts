@@ -1,6 +1,6 @@
 import { Request, Response}  from "express";
 import { requestOtpSchema, verifyOtpSchema } from "../types/authSchema";
-import { requestOtpInput, verifyOtpInput } from "../service/authService";
+import { githubAuthService, requestOtpInput, verifyOtpInput } from "../service/authService";
 import { ZodError } from "zod";
 import { googleAuthService } from "../service/authService";
 
@@ -67,6 +67,26 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
     } catch (err) {
         if(err instanceof Error) {
             res.status(500).json({ error: err.message });
+        } else {
+            res.status(500).json({ error: "Internal Server Error"});
+        }
+    }
+};
+
+export const githubAuth = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { code } = req.body;
+
+        if (!code) {
+            res.status(400).json({ error: "Github OAuth code is required"});
+            return;
+        }
+
+        const result = await githubAuthService(code);
+        res.status(200).json(result);
+    } catch (err) {
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message});
         } else {
             res.status(500).json({ error: "Internal Server Error"});
         }

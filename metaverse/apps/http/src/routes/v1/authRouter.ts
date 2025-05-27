@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { googleAuth, requestOtp, verifyOtp } from "../../controllers/authController";
+import { githubAuth, googleAuth, requestOtp, verifyOtp } from "../../controllers/authController";
 
 export const authRouter = Router();
 
@@ -11,9 +11,6 @@ authRouter.post("/email/verify-otp", verifyOtp);
 // OAuth routes
 
 authRouter.post("/google", googleAuth)
-
-authRouter.get("/github", (req, res) => {
-    res.json({ message: "GitHub OAuth not implemented yet" });
-});
+authRouter.get("/github", githubAuth);
 
 
