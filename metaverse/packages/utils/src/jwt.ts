@@ -6,3 +6,5 @@ export const generateJWT = (userId: string) => {
     return jwt.sign({ userId }, JWT_SECRET, {expiresIn:"7d"});
 };
 
+
+

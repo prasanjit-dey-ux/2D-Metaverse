@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction} from "express";
-import { generateJWT } from "@metaverse/utils";
+import jwt from "jsonwebtoken"
 
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
