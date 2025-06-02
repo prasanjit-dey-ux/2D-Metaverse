@@ -23,6 +23,8 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
+    "jsonwebtoken": "^9.0.2",
     "typescript": "^5.8.3"
   }
 }
