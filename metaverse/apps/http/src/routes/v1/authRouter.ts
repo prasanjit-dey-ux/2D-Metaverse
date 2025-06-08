@@ -11,6 +11,6 @@ authRouter.post("/email/verify-otp", verifyOtp);
 // OAuth routes
 
 authRouter.post("/google", googleAuth)
-authRouter.get("/github", githubAuth);
+authRouter.post("/github", githubAuth);
 
 
