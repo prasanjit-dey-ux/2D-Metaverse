@@ -140,6 +140,7 @@ export const googleAuthService = async (idToken: string) => {
 
         }
     }
+    
 
     const token = generateJWT(user.id);
 
@@ -147,7 +148,8 @@ export const googleAuthService = async (idToken: string) => {
         success: true,
         message: "Google login successful",
         user,
-        token
+        token,
+        profileComplete: user.isProfileComplete,
     };
 
 };

@@ -24,7 +24,8 @@ export default function GithubCallback() {
 
                 console.log("Login success:", res.data);
                 // save token, redirect user, etc
-                navigate("/");
+                localStorage.setItem("token", res.data.token)
+                navigate("/user-info");
             } catch (err) {
                 console.error("GitHub login failed", err);
             }

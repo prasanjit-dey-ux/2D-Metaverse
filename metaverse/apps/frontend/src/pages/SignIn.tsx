@@ -1,9 +1,12 @@
 import { GoogleLogin } from "@react-oauth/google";
+import { useNavigate } from "react-router-dom";
 
 export default function SignIn() {
     const BACKEND = import.meta.env.VITE_BACKEND_URL!;
     // const GOOGLEID = import.meta.env.VITE_GOOGLE_CLIENT_ID!;
     const GITHUBID = import.meta.env.VITE_GITHUB_CLIENT_ID!;
+
+    const navigate = useNavigate();
 
     // ------ Google OAuth ------
     const handleGoogleSuccess = async (res: { credential?: string }) => {
@@ -18,6 +21,13 @@ export default function SignIn() {
         if (data.token) {
             localStorage.setItem("token", data.token);
             alert("Google login success!");
+            
+            if(data.profileComplete){
+                navigate("/dashboard")
+            }else {
+                navigate("/user-info")
+            }
+
         } else {
             alert("Google login failed");
         }
