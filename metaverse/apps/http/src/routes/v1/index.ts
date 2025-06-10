@@ -11,9 +11,12 @@ export const router = Router();
 
 router.use("/auth", authRouter);
 
+
 router.use("/user", requireAuth, userRouter);
+router.use("/space", spaceRouter);
+
 // router.use("/admin",adminRouter);
 // router.use("/avatar", avatarRouter);
-// router.use("/space", spaceRouter);
+
 // router.use("/elements", elementRouter);
 

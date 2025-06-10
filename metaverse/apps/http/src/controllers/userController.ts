@@ -27,3 +27,9 @@ export const updateMetadata = async ( req: Request, res: Response):Promise<void>
         return ;
     }
 };
+
+export const getCurrentUser = (req: Request, res: Response) => {
+    const { user } = req as AuthRequest;
+    // user comes fromt requireAuth middleware
+    res.json({ user });
+}
