@@ -14,21 +14,22 @@ datasource db {
 }
 
 model User {
-  id                  String          @id @unique @default(cuid())
-  email               String          @unique
-  username            String  
-  tag                 String
-  displayName         String?
-  profileImageUrl     String?
-  bannerImageUrl      String?
-  avatarId            String? 
-  role                Role            @default(User)
-  space               Space[]
-  isProfileComplete   Boolean         @default(false)
-  avatar              Avatar?         @relation(fields: [avatarId], references: [id])
-  provider            AuthProvider    @default(EMAIL) 
-  providerId          String?         @unique
-
+  id                String         @id @unique @default(cuid())
+  email             String         @unique
+  username          String
+  tag               String
+  displayName       String?
+  profileImageUrl   String?
+  bannerImageUrl    String?
+  avatarId          String?
+  bio               String? 
+  role              Role           @default(User)
+  spaces            Space[]        // Renamed 'space' to 'spaces' for clarity (one user can create many spaces)
+  isProfileComplete Boolean        @default(false)
+  avatar            Avatar?        @relation(fields: [avatarId], references: [id])
+  provider          AuthProvider   @default(EMAIL) 
+  providerId        String?        @unique
+  
   @@unique([username, tag])
   @@unique([provider, providerId])
 }
@@ -42,14 +43,21 @@ model Otp {
 }
 
 model Space {
-  id        String  @id @unique @default(cuid())
-  name      String
-  width     Int
-  height    Int?
-  thumbnail String?
-  creatorId String
-  creator     User  @relation(fields: [creatorId], references: [id])
-  elements  SpaceElements[]
+  id          String        @id @unique @default(cuid())
+  name        String
+  width       Int           // Width is stored directly on Space, as provided by frontend from Map selection
+  height      Int           // Changed from Int? to Int, as frontend provides this from Map selection
+  // Removed: thumbnail String? - This property should be accessed via the 'map' relation
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  creatorId   String
+  creator     User          @relation(fields: [creatorId], references: [id])
+
+  mapId       String        // NEW: Foreign key to the Map model
+  map         Map           @relation(fields: [mapId], references: [id]) // NEW: Relation to the Map model
+
+  elements    SpaceElements[]
 }
 
 model SpaceElements {
@@ -58,25 +66,30 @@ model SpaceElements {
   spaceId   String
   x         Int
   y         Int
-  space     Space  @relation(fields: [spaceId], references: [id])
-  element   Element  @relation(fields: [elementId], references: [id])
+  space     Space   @relation(fields: [spaceId], references: [id])
+  element   Element @relation(fields: [elementId], references: [id])
 }
 
 model Element {
-  id              String @id @unique @default(cuid())
-  width           Int
-  height          Int
-  imageUrl        String
-  spaces          SpaceElements[]
-  mapElements     MapElements[]
+  id          String @id @unique @default(cuid())
+  width       Int
+  height      Int
+  imageUrl    String
+  spaces      SpaceElements[]
+  mapElements MapElements[]
 }
 
 model Map {
-  id           String  @id @unique @default(cuid())
+  id           String        @id @unique @default(cuid())
   width        Int
   height       Int
-  name         String
+  name         String        @unique // Ensures map names are unique
+  thumbnailUrl String?
+  createdAt    DateTime      @default(now()) // Added for consistency
+  updatedAt    DateTime      @updatedAt // Added for consistency
+
   mapElements  MapElements[]
+  spaces       Space[]       // NEW: Back relation to Space model (a Map can be used by many Spaces)
 }
 
 model MapElements {
@@ -87,14 +100,13 @@ model MapElements {
   y         Int?
   map       Map     @relation(fields: [mapId], references: [id])
   element   Element @relation(fields: [elementId], references: [id])
- 
 }
 
 model Avatar {
   id       String  @id @unique @default(cuid())
   imageUrl String?
   name     String?
-  users     User[]
+  users    User[]
 }
 
 enum Role {
