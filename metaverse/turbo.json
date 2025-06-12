@@ -47,6 +47,19 @@
     "dev:components": {
       "cache": false,
       "persistent": true
+    },
+    "ws#build": { 
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "ws#start": { 
+      "cache": false,
+      "persistent": true
+    },
+    "ws#dev": { 
+      "cache": false,
+      "persistent": true
     }
   }
 }

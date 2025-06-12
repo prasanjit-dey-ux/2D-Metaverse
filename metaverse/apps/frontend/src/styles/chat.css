@@ -1,0 +1,26 @@
+/* apps/frontend/src/styles/chat.css */
+
+.chat-box {
+    left: -320px; /* Hidden by default */
+    transition: left 0.3s ease-in-out; /* Smooth transition */
+}
+
+.chat-box.open {
+    left: 0; /* Slides into view when 'open' class is present */
+}
+
+/* Scrollbar hiding for the messages container */
+.scrollbar-hide::-webkit-scrollbar {
+    width: 0;
+    /* For vertical scrollbars */
+    height: 0;
+    /* For horizontal scrollbars */
+    background: transparent;
+    /* Make scrollbar transparent */
+}
+
+/* For Firefox */
+.scrollbar-hide {
+    scrollbar-width: none;
+    /* Hide scrollbar in Firefox */
+}
