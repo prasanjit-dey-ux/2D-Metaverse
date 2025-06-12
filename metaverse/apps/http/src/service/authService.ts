@@ -242,7 +242,8 @@ export const githubAuthService = async (code: string) => {
         success: true,
         message: "Github login successful",
         user,
-        token
+        token,
+        profileComplete: user.isProfileComplete,
     };
 };
 

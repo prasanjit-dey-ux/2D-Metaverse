@@ -1,17 +1,17 @@
 import { Router } from "express";
-import { createSession, deleteSession, getSession, listMySessions } from "../../controllers/spaceController";
 import { requireAuth } from "../../middleware/authMiddleware";
+import { createSpace, getAllSpaces, getSpaceById, deleteSpace  } from "../../controllers/spaceController";
 
 
 export const spaceRouter = Router();
 
 //All route require a valid JWT
 spaceRouter.use(requireAuth);
+spaceRouter.get("/all", getAllSpaces);
+spaceRouter.get("/:id", getSpaceById);
+spaceRouter.post("/",createSpace); 
+spaceRouter.delete("/:spaceId", deleteSpace );
 
-spaceRouter.post("/", createSession);
-spaceRouter.get("/:spaceId", getSession);
-spaceRouter.delete("/:spaceId", deleteSession);
-spaceRouter.get("/all", listMySessions);
 
 // spaceRouter.post("/element");
 
