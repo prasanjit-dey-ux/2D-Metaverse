@@ -1,31 +1,17 @@
-import client from "@metaverse/db";
-import { Prisma } from "@metaverse/db";
+import client from "@metaverse/db/client";
+import { Prisma } from "@metaverse/db/client";
 
 export interface CreateSpaceInput {
-    mapId?: string; // map template
-    name: string; // session name
-    dimensions?:  string// eg: (1000x1000) if no map
+    mapId: string;
+    name: string;
 }
 
-export async function createSpace(
-    userId: string,
-    input: CreateSpaceInput
-) {
-    const { mapId, name, dimensions } = input;
+export async function createSpace(userId: string, input: CreateSpaceInput) {
+    const { mapId, name } = input;
 
-    // if no mapId is present then parse dimention and create blank space
-    if (!mapId) {
-        if (!dimensions) throw new Error ("Dimention required if no mapId");
-        const [w, h] = dimensions.split("x").map(n => parseInt(n, 10));
-        return client.space.create({
-            data: {name, width: w, height: h, creatorId: userId},
-        });
-    }
-
-    // if map present then clone it in a single transaction
     const map = await client.map.findUnique({
-        where: {id: mapId},
-        include: {mapElements: true},
+        where: { id: mapId },
+        include: { mapElements: true},
     });
     if (!map) throw new Error("Map not found");
 
@@ -37,54 +23,105 @@ export async function createSpace(
                 width: map.width,
                 height: map.height,
                 creatorId: userId,
+                mapId: map.id // Explicitly providing mapId
             },
+            // Include map details for the response, similar to how getAllSpaces expects it
+            select: {
+                id: true,
+                name: true,
+                width: true,
+                height: true,
+                createdAt: true,
+                updatedAt: true,
+                map: { // Include the map relation to get its thumbnail
+                    select: {
+                        thumbnailUrl: true
+                    }
+                }
+            }
         });
 
-        // bulk-insert all elemnts fromt the map template
-        const elementData: Prisma.SpaceElementsCreateManyInput[] = map.mapElements.map(e=> ({
-            spaceId: space.id,
-            elementId: e.elementId,
-            x: e.x ?? 0,
-            y: e.y ?? 0,
-        }));
+        // bulk-insert all elements from the map template
+        // Only proceed if mapElements exist, otherwise it could try to map undefined
+        if (map.mapElements && map.mapElements.length > 0) {
+            const elementData: Prisma.SpaceElementsCreateManyInput[] = map.mapElements.map(e => ({
+                spaceId: space.id,
+                elementId: e.elementId,
+                x: e.x ?? 0,
+                y: e.y ?? 0,
+            }));
+            await tx.spaceElements.createMany({ data: elementData});
+        }
 
-        await tx.spaceElements.createMany({ data: elementData});
-        return space;
+        // Return the created space, ensuring it includes the map thumbnail if needed by the controller
+        // The return structure here should match what the controller expects.
+        // For getAllSpaces transformation to work, it needs map.thumbnailUrl.
+
+        return {
+            ...space,
+            thumbnail: space.map.thumbnailUrl // // Add thumbnail property for consistency with frontend expectation
+        };
     });
 }
 
 export async function listMySpace(userId: string) {
     return client.space.findMany({
         where: { creatorId: userId},
-        select: { id: true, name: true, thumbnail: true, width: true, height: true},
-    });
+        select: {
+            id: true,
+            name: true,
+            width: true,
+            height: true,
+            createdAt: true, // Inclue createAt/Update at for consistency
+            updatedAt: true,
+            map: {
+                select: {
+                    thumbnailUrl: true
+                }
+            }
+        },
+    }).then(spaces => spaces.map(space => ({
+        id: space.id,
+        name: space.name,
+        width: space.width,
+        height: space.height,
+        thumbnail: space.map.thumbnailUrl,
+        createdAt: space.createdAt,
+        updatedAt: space.updatedAt,
+    })));
 }
 
-export async function deleteSpace(userId: string, spaceId: string) {
-    const space = await client.space.findUnique({ where: { id: spaceId} });
+export async function deleteSpace(userId:string, spaceId: string) {
+    const space = await client.space.findUnique({where: { id: spaceId}});
     if (!space) throw new Error("Space not found");
-    if (space.creatorId !== userId) throw new Error ("Not authorized");
+    if (space.creatorId !== userId) throw new Error("Not authorized to delete this space");
+
+    // Fix: Delete related SpaceElement first to avoid foreign key constrains
+    await client.spaceElements.deleteMany({
+        where: { spaceId: spaceId}
+    });
+
     await client.space.delete({ where: { id: spaceId}});
 }
 
-export async function  getSpaceDetails(spaceId: string) {
+export async function getSpaceDetails(spaceId: string) {
     const space = await client.space.findUnique({
         where: {
             id: spaceId
         },
         include: {
-            elements: { include: { element: true}},
+            elements: { include: {element: true}},
+            map: {
+                select: {
+                    id: true,
+                    name: true,
+                    width: true,
+                    height: true,
+                    thumbnailUrl: true,
+                }
+            }
         },
     });
     if (!space) throw new Error("Space not found");
     return space;
 }
-
-// export async function joinSpace(
-//     userId: string,
-//     spaceId: string,
-//     avatarId: string
-// ) {
-//     // prevent duplicate joins
-
-// }
