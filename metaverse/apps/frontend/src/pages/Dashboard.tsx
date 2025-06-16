@@ -28,11 +28,11 @@ interface Map {
 
 // Update Avatar interface to reflect new properties
 interface Avatar {
-    id: string;
+    id: string; // Ensure this matches what's in avatars.ts (e.g., "avatar1", "avatar2")
     name: string;
     displaySprite: string; // New property for UI display image filename
-    gameSheet: string;      // New property for in-game spritesheet filename
-    imageUrl: string;        // Constructed path for UI display
+    gameSheet: string;     // New property for in-game spritesheet filename
+    imageUrl: string;      // Constructed path for UI display
 }
 
 export default function Dashboard() {
@@ -103,12 +103,12 @@ export default function Dashboard() {
 
                 // --- Define/Fetch Available Avatars (for selection) ---
                 // Now using the imported 'avatars' array from Game/avatars.ts
-                const mappedAvatars: Avatar[] = avatars.map((avatar, index) => ({
-                    id: `avatar${index + 1}`, // Generate consistent IDs like "avatar1", "avatar2" for URL params
+                const mappedAvatars: Avatar[] = avatars.map((avatar) => ({
+                    id: avatar.id, // Use the pre-defined ID from avatars.ts
                     name: avatar.name,
-                    displaySprite: avatar.displaySprite, // Use the specific display sprite
-                    gameSheet: avatar.gameSheet,           // Store game sheet for later use
-                    imageUrl: `/images/avatar_ui/${avatar.displaySprite}`, 
+                    displaySprite: avatar.displaySprite,
+                    gameSheet: avatar.gameSheet,
+                    imageUrl: `/images/avatar_ui/${avatar.displaySprite}`,
                 }));
                 setAvailableAvatars(mappedAvatars);
                 // Set initial selected avatar if available and nothing is selected yet
@@ -196,7 +196,7 @@ export default function Dashboard() {
             setSelectedMap(availableMaps.length > 0 ? availableMaps[0] : null); // Reset to first available map
             setSelectedAvatar(availableAvatars.length > 0 ? availableAvatars[0] : null); // Reset to first available avatar
 
-            // Set the created space's shareable link including the selected avatar's GAME sprite filename
+            // Set the created space's shareable link including the selected avatar's ID
             setCreatedSpaceLink(`${window.location.origin}/space/${createdSpace.id}?avatarId=${selectedAvatar.id}`);
 
             // Keep the modal open to show the link to the user
@@ -227,17 +227,18 @@ export default function Dashboard() {
             return;
         }
 
-        // Navigate to the space, passing the chosen avatar's GAME sprite filename as a query parameter
+        // Navigate to the space, passing the chosen avatar's ID as a query parameter
         navigate(`/space/${joinSpaceId.trim()}?avatarId=${selectedAvatar.id}`);
     };
 
     // Function to handle entering an existing space from the list
     const handleEnterSpace = (spaceId: string) => {
-        // When entering a listed space, also pass the currently selected avatar's GAME sprite filename
+        // When entering a listed space, also pass the currently selected avatar's ID
         if (selectedAvatar) {
             navigate(`/space/${spaceId}?avatarId=${selectedAvatar.id}`);
         } else {
             // Fallback if no avatar is selected (shouldn't happen with default selection)
+            // This might lead to 'player1.png' if no avatarId is provided
             navigate(`/space/${spaceId}`);
         }
     };
@@ -309,19 +310,7 @@ export default function Dashboard() {
                 // Basic custom message box implementation
                 const messageDiv = document.createElement('div');
                 messageDiv.textContent = "Link copied to clipboard!";
-                messageDiv.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background-color: #4CAF50;
-                    color: white;
-                    padding: 10px 20px;
-                    border-radius: 5px;
-                    z-index: 9999;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-                    opacity: 0;
-                    transition: opacity 0.3s ease-in-out;
-                `;
+                messageDiv.className = "fixed top-5 right-5 bg-green-500 text-white p-3 rounded-md shadow-lg z-[9999] opacity-0 transition-opacity duration-300";
                 document.body.appendChild(messageDiv);
                 setTimeout(() => { messageDiv.style.opacity = '1'; }, 10);
                 setTimeout(() => { messageDiv.style.opacity = '0'; }, 2000);
@@ -334,19 +323,7 @@ export default function Dashboard() {
                     .then(() => {
                         const messageDiv = document.createElement('div');
                         messageDiv.textContent = "Link copied to clipboard!";
-                        messageDiv.style.cssText = `
-                            position: fixed;
-                            top: 20px;
-                            right: 20px;
-                            background-color: #4CAF50;
-                            color: white;
-                            padding: 10px 20px;
-                            border-radius: 5px;
-                            z-index: 9999;
-                            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-                            opacity: 0;
-                            transition: opacity 0.3s ease-in-out;
-                        `;
+                        messageDiv.className = "fixed top-5 right-5 bg-green-500 text-white p-3 rounded-md shadow-lg z-[9999] opacity-0 transition-opacity duration-300";
                         document.body.appendChild(messageDiv);
                         setTimeout(() => { messageDiv.style.opacity = '1'; }, 10);
                         setTimeout(() => { messageDiv.style.opacity = '0'; }, 2000);
@@ -365,61 +342,65 @@ export default function Dashboard() {
 
     // Render loading state
     if (loading) {
-        return <div style={containerStyle}>Loading dashboard...</div>;
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+                <div className="text-xl font-semibold">Loading dashboard...</div>
+                <div className="mt-4 animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+        );
     }
 
     // Render error state
     if (error) {
         return (
-            <div style={{ ...containerStyle, color: "red" }}>
+            <div className="max-w-screen-md mx-auto my-10 p-8 border border-gray-200 rounded-lg shadow-md bg-white text-red-600">
                 Error: {error}
-                <button onClick={handleLogout} style={logoutButtonStyle}>Logout</button>
+                <button onClick={handleLogout} className="ml-4 px-4 py-2 bg-red-600 text-white font-bold rounded-md cursor-pointer text-sm">Logout</button>
             </div>
         );
     }
 
     // Main Dashboard Render
     return (
-        <div style={containerStyle}>
-            <div style={headerStyle}>
-                <h2 style={{ margin: 0 }}>Welcome {username || 'User'}!</h2> {/* Display fetched username */}
-                <button onClick={handleLogout} style={logoutButtonStyle}>Logout</button>
+        <div className="max-w-screen-md mx-auto my-10 p-8 border border-gray-200 rounded-lg shadow-md bg-white">
+            <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
+                <h2 className="text-2xl font-bold text-gray-800">Welcome {username || 'User'}!</h2>
+                <button onClick={handleLogout} className="px-4 py-2 bg-red-600 text-white font-bold rounded-md cursor-pointer text-sm hover:bg-red-700 transition-colors">Logout</button>
             </div>
 
             {/* Section for Joining a Space by ID */}
-            <div style={sectionStyle}>
-                <h3>Join Space by ID</h3>
-                <form onSubmit={handleJoinSpace} style={joinSpaceFormStyle}>
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-4 text-gray-700">Join Space by ID</h3>
+                <form onSubmit={handleJoinSpace} className="flex gap-4 mb-4">
                     <input
                         type="text"
                         value={joinSpaceId}
                         onChange={(e) => setJoinSpaceId(e.target.value)}
                         placeholder="Enter Space ID"
-                        style={inputStyle}
+                        className="flex-grow p-2 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                     />
-                    <button type="submit" style={joinSpaceButtonStyle}>
+                    <button type="submit" className="px-5 py-2 bg-gray-600 text-white font-bold rounded-md cursor-pointer text-base hover:bg-gray-700 transition-colors">
                         Join Space
                     </button>
                 </form>
-                {joinSpaceError && <p style={errorTextStyle}>{joinSpaceError}</p>}
-                {/* Re-using the avatar selection for Join Space as well (user's current choice) */}
-                <label style={labelStyle}>Your Current Avatar for Joining:</label>
-                <div style={avatarGridStyle}>
+                {joinSpaceError && <p className="text-red-500 text-sm mt-1">{joinSpaceError}</p>}
+                
+                <label className="font-bold mb-1 block mt-4 text-gray-700">Your Current Avatar for Joining:</label>
+                {/* Tailwind v4 arbitrary value for grid-cols */}
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-4 mb-5 p-2 border border-gray-200 rounded-md">
                     {availableAvatars.length === 0 ? (
-                        <p>No avatars available.</p>
+                        <p className="text-gray-500">No avatars available.</p>
                     ) : (
                         availableAvatars.map((avatar) => (
                             <div
                                 key={avatar.id}
-                                style={{
-                                    ...avatarItemStyle,
-                                    border: selectedAvatar?.id === avatar.id ? '2px solid #007bff' : '1px solid #ccc',
-                                }}
+                                className={`flex flex-col items-center p-2 rounded-lg bg-gray-50 cursor-pointer transition-transform duration-200 hover:scale-105 
+                                    ${selectedAvatar?.id === avatar.id ? 'border-2 border-blue-500' : 'border border-gray-300'}`}
                                 onClick={() => setSelectedAvatar(avatar)}
                             >
-                                <img src={avatar.imageUrl} alt={avatar.name} style={avatarImageStyle} />
-                                <span>{avatar.name}</span>
+                                <img src={avatar.imageUrl} alt={avatar.name} className="w-16 h-16 object-contain rounded-full mb-1.5" />
+                                <span className="text-sm font-medium text-gray-700">{avatar.name}</span>
                             </div>
                         ))
                     )}
@@ -427,13 +408,13 @@ export default function Dashboard() {
             </div>
 
             {/* Section for Creating a New Space (opens modal) */}
-            <div style={sectionStyle}>
-                <h3>Create New Space</h3>
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-4 text-gray-700">Create New Space</h3>
                 <button onClick={() => {
                     openCreateModal();
-                    setJoinSpaceId(""); // Clear join space input if opening create modal
+                    setJoinSpaceId("");
                     setJoinSpaceError(null);
-                }} style={createSpaceButtonStyle}>
+                }} className="px-6 py-3 bg-green-600 text-white font-bold rounded-md cursor-pointer text-lg block mx-auto hover:bg-green-700 transition-colors">
                     Create New Space
                 </button>
             </div>
@@ -441,91 +422,85 @@ export default function Dashboard() {
 
             {/* Modal for Creating a New Space */}
             {isCreateModalOpen && (
-                <div style={modalOverlayStyle}>
-                    <div style={modalContentStyle}>
-                        <div style={modalHeaderStyle}>
-                            <h3>Create Your New Space</h3>
-                            <button onClick={closeCreateModal} style={modalCloseButtonStyle}>X</button>
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+                    <div className="bg-white p-8 rounded-lg shadow-2xl w-11/12 max-w-lg max-h-4/5 overflow-y-auto relative">
+                        <div className="flex justify-between items-center mb-5 pb-2 border-b border-gray-200">
+                            <h3 className="text-xl font-bold text-gray-800">Create Your New Space</h3>
+                            <button onClick={closeCreateModal} className="bg-transparent border-none text-gray-500 text-xl cursor-pointer hover:text-gray-800 transition-colors">X</button>
                         </div>
 
-                        {createdSpaceLink ? ( // Show link if space is created
-                            <div style={spaceCreatedMessageStyle}>
-                                <p style={successTextStyle}>Space created successfully!</p>
-                                <p style={linkDisplayContainerStyle}>
-                                    Share this link: <span style={linkTextStyle}>{createdSpaceLink}</span>
+                        {createdSpaceLink ? (
+                            <div className="flex flex-col items-center gap-4 p-5 bg-green-50 rounded-lg border border-green-300">
+                                <p className="text-green-700 text-lg font-bold text-center mb-4">Space created successfully!</p>
+                                <p className="bg-gray-100 p-4 rounded-lg mb-5 break-all text-center text-sm">
+                                    Share this link: <span className="font-bold text-blue-700">{createdSpaceLink}</span>
                                 </p>
-                                <button onClick={copyToClipboard} style={copyButtonStyle}>
+                                <button onClick={copyToClipboard} className="px-5 py-2 bg-teal-600 text-white font-bold rounded-md cursor-pointer text-base mr-2 hover:bg-teal-700 transition-colors">
                                     Copy Link
                                 </button>
-                                {/* Navigate using slice(window.location.origin.length) to ensure correct relative path */}
-                                <button onClick={() => navigate(createdSpaceLink.slice(window.location.origin.length))} style={enterCreatedSpaceButtonStyle}>
+                                <button onClick={() => navigate(createdSpaceLink.slice(window.location.origin.length))} className="px-5 py-2 bg-blue-600 text-white font-bold rounded-md cursor-pointer text-base hover:bg-blue-700 transition-colors">
                                     Enter Space Now
                                 </button>
-                                <button onClick={closeCreateModal} style={modalCloseButtonStyle}>
+                                <button onClick={closeCreateModal} className="mt-4 px-5 py-2 bg-gray-500 text-white font-bold rounded-md cursor-pointer text-base hover:bg-gray-600 transition-colors">
                                     Done
                                 </button>
                             </div>
-                        ) : ( // Show the creation form
-                            <form onSubmit={handleCreateSpace} style={modalFormStyle}>
-                                {/* Space Name Input */}
-                                <label style={labelStyle}>Space Name:</label>
+                        ) : (
+                            <form onSubmit={handleCreateSpace} className="flex flex-col gap-4">
+                                <label className="font-bold mb-1 block mt-2 text-gray-700">Space Name:</label>
                                 <input
                                     type="text"
                                     value={newSpaceName}
                                     onChange={(e) => setNewSpaceName(e.target.value)}
                                     placeholder="Enter space name"
-                                    style={inputStyle}
+                                    className="p-2 rounded-md border border-gray-300 text-base w-full box-border focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     required
                                 />
 
-                                {/* Map Selection */}
-                                <label style={labelStyle}>Choose a Map:</label>
-                                <div style={mapGridStyle}>
+                                <label className="font-bold mb-1 block mt-2 text-gray-700">Choose a Map:</label>
+                                {/* Tailwind v4 arbitrary value for grid-cols */}
+                                <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-4 mb-5 p-2 border border-gray-200 rounded-md">
                                     {availableMaps.length === 0 ? (
-                                        <p>No maps available. Please add maps to your backend.</p>
+                                        <p className="text-gray-500">No maps available. Please add maps to your backend.</p>
                                     ) : (
                                         availableMaps.map((map) => (
                                             <div
                                                 key={map.id}
-                                                style={{
-                                                    ...mapItemStyle,
-                                                    border: selectedMap?.id === map.id ? '2px solid #007bff' : '1px solid #ccc',
-                                                }}
+                                                className={`flex flex-col items-center p-2 rounded-lg bg-gray-50 cursor-pointer transition-transform duration-200 hover:scale-105 
+                                                    ${selectedMap?.id === map.id ? 'border-2 border-blue-500' : 'border border-gray-300'}`}
                                                 onClick={() => setSelectedMap(map)}
                                             >
-                                                <img src={map.thumbnailUrl || 'https://placehold.co/100x75/E0E0E0/333333?text=No+Map'} alt={map.name} style={mapThumbnailStyle} />
-                                                <span>{map.name}</span>
+                                                <img src={map.thumbnailUrl || 'https://placehold.co/100x75/E0E0E0/333333?text=No+Map'} alt={map.name} className="w-24 h-16 object-cover rounded-md mb-2" />
+                                                <span className="text-sm font-medium text-gray-700">{map.name}</span>
                                             </div>
                                         ))
                                     )}
                                 </div>
 
 
-                                {/* Avatar Selection (in modal for creation) */}
-                                <label style={labelStyle}>Choose Your Avatar:</label>
-                                <div style={avatarGridStyle}>
+                                <label className="font-bold mb-1 block mt-2 text-gray-700">Choose Your Avatar:</label>
+                                {/* Tailwind v4 arbitrary value for grid-cols */}
+                                <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-4 mb-5 p-2 border border-gray-200 rounded-md">
                                     {availableAvatars.length === 0 ? (
-                                        <p>No avatars available.</p>
+                                        <p className="text-gray-500">No avatars available.</p>
                                     ) : (
                                         availableAvatars.map((avatar) => (
                                             <div
                                                 key={avatar.id}
-                                                style={{
-                                                    ...avatarItemStyle,
-                                                    border: selectedAvatar?.id === avatar.id ? '2px solid #007bff' : '1px solid #ccc',
-                                                }}
+                                                className={`flex flex-col items-center p-2 rounded-lg bg-gray-50 cursor-pointer transition-transform duration-200 hover:scale-105 
+                                                    ${selectedAvatar?.id === avatar.id ? 'border-2 border-blue-500' : 'border border-gray-300'}`}
                                                 onClick={() => setSelectedAvatar(avatar)}
                                             >
-                                                <img src={avatar.imageUrl} alt={avatar.name} style={avatarImageStyle} />
-                                                <span>{avatar.name}</span>
+                                                <img src={avatar.imageUrl} alt={avatar.name} className="w-16 h-16 object-contain rounded-full mb-1.5" />
+                                                <span className="text-sm font-medium text-gray-700">{avatar.name}</span>
                                             </div>
                                         ))
                                     )}
                                 </div>
 
-                                {createSpaceError && <p style={errorTextStyle}>{createSpaceError}</p>}
+                                {createSpaceError && <p className="text-red-500 text-sm mt-1">{createSpaceError}</p>}
 
-                                <button type="submit" disabled={creatingSpace} style={modalCreateButtonStyle}>
+                                <button type="submit" disabled={creatingSpace} className="px-5 py-3 bg-blue-600 text-white font-bold rounded-md cursor-pointer text-base mt-5 hover:bg-blue-700 transition-colors">
                                     {creatingSpace ? "Creating..." : "Create Space"}
                                 </button>
                             </form>
@@ -536,20 +511,20 @@ export default function Dashboard() {
 
 
             {/* Section for Listing User's Spaces */}
-            <div style={sectionStyle}>
-                <h3>Your Spaces</h3>
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-4 text-gray-700">Your Spaces</h3>
                 {spaces.length === 0 ? (
-                    <p>You haven't created any spaces yet. Create one above!</p>
+                    <p className="text-gray-500">You haven't created any spaces yet. Create one above!</p>
                 ) : (
-                    <ul style={spaceListStyle}>
+                    <ul className="list-none p-0">
                         {spaces.map((space) => (
-                            <li key={space.id} style={spaceItemStyle}>
-                                <span>{space.name} ({space.width}x{space.height || 'auto'})</span>
-                                <div style={spaceActionsStyle}> {/* New div for buttons */}
-                                    <button onClick={() => handleEnterSpace(space.id)} style={enterSpaceButtonStyle}>
+                            <li key={space.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-md mb-2 bg-gray-50">
+                                <span className="text-gray-800">{space.name} ({space.width}x{space.height || 'auto'})</span>
+                                <div className="flex gap-2">
+                                    <button onClick={() => handleEnterSpace(space.id)} className="px-3 py-1.5 bg-blue-500 text-white font-bold rounded-md cursor-pointer text-sm hover:bg-blue-600 transition-colors">
                                         Enter Space
                                     </button>
-                                    <button onClick={() => handleDeleteSpace(space.id)} style={deleteSpaceButtonStyle}> {/* New Delete Button */}
+                                    <button onClick={() => handleDeleteSpace(space.id)} className="px-3 py-1.5 bg-yellow-500 text-gray-800 font-bold rounded-md cursor-pointer text-sm hover:bg-yellow-600 transition-colors">
                                         Delete
                                     </button>
                                 </div>
@@ -561,313 +536,3 @@ export default function Dashboard() {
         </div>
     );
 }
-
-// --- STYLES ---
-const containerStyle: React.CSSProperties = {
-    maxWidth: "800px",
-    margin: "40px auto",
-    padding: "30px",
-    border: "1px solid #e0e0e0",
-    borderRadius: "8px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-    backgroundColor: "#fff",
-};
-
-const headerStyle: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "30px",
-    borderBottom: "1px solid #f0f0f0",
-    paddingBottom: "15px",
-};
-
-const logoutButtonStyle: React.CSSProperties = {
-    padding: "8px 16px",
-    backgroundColor: "#dc3545",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "bold",
-};
-
-const sectionStyle: React.CSSProperties = {
-    marginBottom: "30px",
-};
-
-const createSpaceButtonStyle: React.CSSProperties = {
-    padding: "12px 24px",
-    backgroundColor: "#28a745",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "18px",
-    fontWeight: "bold",
-    display: 'block',
-    width: 'fit-content',
-    margin: '0 auto'
-};
-
-const errorTextStyle: React.CSSProperties = {
-    color: "red",
-    fontSize: "14px",
-    marginTop: "5px",
-};
-
-const spaceListStyle: React.CSSProperties = {
-    listStyle: "none",
-    padding: 0,
-};
-
-const spaceItemStyle: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "12px 15px",
-    border: "1px solid #e9e9e9",
-    borderRadius: "5px",
-    marginBottom: "10px",
-    backgroundColor: "#fefefe",
-};
-
-const spaceActionsStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "10px", // Space between Enter and Delete buttons
-};
-
-const enterSpaceButtonStyle: React.CSSProperties = {
-    padding: "8px 16px",
-    backgroundColor: "#007bff",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "bold",
-};
-
-const deleteSpaceButtonStyle: React.CSSProperties = { // New style for delete button
-    padding: "8px 16px",
-    backgroundColor: "#ffc107", // Warning yellow
-    color: "#333", // Darker text for contrast
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "bold",
-};
-
-// --- MODAL STYLES ---
-const modalOverlayStyle: React.CSSProperties = {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-};
-
-const modalContentStyle: React.CSSProperties = {
-    backgroundColor: "#fff",
-    padding: "30px",
-    borderRadius: "10px",
-    boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
-    width: "90%",
-    maxWidth: "600px",
-    maxHeight: "80vh",
-    overflowY: "auto",
-    position: "relative",
-};
-
-const modalHeaderStyle: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "20px",
-    borderBottom: "1px solid #eee",
-    paddingBottom: "10px",
-};
-
-const modalCloseButtonStyle: React.CSSProperties = {
-    background: "none",
-    border: "none",
-    fontSize: "20px",
-    cursor: "pointer",
-    color: "#888",
-};
-
-const modalFormStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-};
-
-const labelStyle: React.CSSProperties = {
-    fontWeight: "bold",
-    marginBottom: "5px",
-    marginTop: "10px",
-    display: "block",
-};
-
-const inputStyle: React.CSSProperties = {
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    fontSize: "16px",
-    width: "100%",
-    boxSizing: 'border-box'
-};
-
-const modalCreateButtonStyle: React.CSSProperties = {
-    padding: "12px 20px",
-    backgroundColor: "#007bff",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "bold",
-    marginTop: "20px",
-};
-
-// --- MAP & AVATAR SELECTION STYLES ---
-const mapGridStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
-    gap: "15px",
-    marginBottom: "20px",
-    padding: "10px",
-    border: "1px solid #eee",
-    borderRadius: "5px",
-};
-
-const mapItemStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "10px",
-    borderRadius: "8px",
-    backgroundColor: "#f9f9f9",
-    cursor: "pointer",
-    transition: "transform 0.2s, border-color 0.2s",
-};
-
-const mapThumbnailStyle: React.CSSProperties = {
-    width: "100px",
-    height: "75px",
-    objectFit: "cover",
-    borderRadius: "5px",
-    marginBottom: "8px",
-};
-
-const avatarGridStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
-    gap: "15px",
-    marginBottom: "20px",
-    padding: "10px",
-    border: "1px solid #eee",
-    borderRadius: "5px",
-};
-
-const avatarItemStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "8px",
-    borderRadius: "8px",
-    backgroundColor: "#f9f9f9",
-    cursor: "pointer",
-    transition: "transform 0.2s, border-color 0.2s",
-};
-
-const avatarImageStyle: React.CSSProperties = {
-    width: "60px",
-    height: "60px",
-    objectFit: "contain",
-    borderRadius: "50%",
-    marginBottom: "5px",
-};
-
-// --- STYLES FOR JOIN SPACE SECTION ---
-const joinSpaceFormStyle: React.CSSProperties = {
-    display: "flex",
-    gap: "10px",
-    marginBottom: "15px",
-};
-
-const joinSpaceButtonStyle: React.CSSProperties = {
-    padding: "10px 20px",
-    backgroundColor: "#6c757d",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "bold",
-};
-
-// --- NEW STYLES FOR SPACE CREATED MESSAGE IN MODAL ---
-const spaceCreatedMessageStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "15px",
-    padding: "20px",
-    backgroundColor: "#f0fff0", // Light green background for success
-    borderRadius: "8px",
-    border: "1px solid #c3e6cb", // Green border
-};
-
-const successTextStyle: React.CSSProperties = {
-    color: "#28a745",
-    fontSize: "1.2em",
-    fontWeight: "bold",
-    marginBottom: "15px",
-    textAlign: "center",
-};
-
-const linkDisplayContainerStyle: React.CSSProperties = {
-    backgroundColor: "#e9ecef",
-    padding: "15px",
-    borderRadius: "8px",
-    marginBottom: "20px",
-    wordBreak: "break-all", // Allows long links to wrap
-    textAlign: "center",
-    fontSize: "0.9em",
-};
-
-const linkTextStyle: React.CSSProperties = {
-    fontWeight: "bold",
-    color: "#0056b3",
-};
-
-const copyButtonStyle: React.CSSProperties = {
-    padding: "10px 20px",
-    backgroundColor: "#17a2b8", // Info blue
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "bold",
-    marginRight: "10px", // Space from next button
-};
-
-const enterCreatedSpaceButtonStyle: React.CSSProperties = {
-    padding: "10px 20px",
-    backgroundColor: "#007bff", // Primary blue
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "bold",
-};

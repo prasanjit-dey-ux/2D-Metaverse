@@ -4,6 +4,7 @@ import App from "./App";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { BrowserRouter } from "react-router-dom"
 import './styles/chat.css'; 
+import './index.css';
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

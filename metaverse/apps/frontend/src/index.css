@@ -1,68 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import "tailwindcss";
+
+/* Custom CSS Variables */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --metaverse-bg: #0B1026;
+  --neon-pink: #ff65c3;
+  --neon-blue: #21d4fd;
+  --neon-violet: #a259ff;
+  --neon-green: #39ff14;
+  --metaverse-card: rgba(18, 22, 48, 0.85);
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
+/* Optional global font */
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.font-pixel {
+  font-family: 'Press Start 2P', cursive;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+/* Landing page-specific background */
+@layer components {
+  .landing-page {
+    background-color: var(--metaverse-bg);
+    min-height: 100vh;
+  }
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Custom Tailwind utilities */
+@layer utilities {
+  .bg-metaverse-bg { background-color: var(--metaverse-bg); }
+  .bg-metaverse-card { background-color: var(--metaverse-card); }
+
+  .bg-neon-green { background-color: var(--neon-green); }
+  .text-neon-green { color: var(--neon-green); }
+
+  .bg-neon-violet { background-color: var(--neon-violet); }
+  .text-neon-violet { color: var(--neon-violet); }
+
+  .bg-neon-blue { background-color: var(--neon-blue); }
+  .text-neon-blue { color: var(--neon-blue); }
+
+  .bg-neon-pink { background-color: var(--neon-pink); }
+  .text-neon-pink { color: var(--neon-pink); }
+
+  .font-pixel { font-family: "Press Start 2P", cursive; }
+
+  .shadow-neon-green {
+    box-shadow: 0 0 12px 2px #39ff14, 0 0 48px 2px #39ff1499;
   }
-  a:hover {
-    color: #747bff;
+  .shadow-neon-violet {
+    box-shadow: 0 0 12px 2px #a259ff, 0 0 48px 2px #a259ff99;
   }
-  button {
-    background-color: #f9f9f9;
+  .shadow-neon-blue {
+    box-shadow: 0 0 12px 2px #21d4fd, 0 0 48px 2px #21d4fd99;
   }
+  .shadow-neon-pink {
+    box-shadow: 0 0 12px 2px #ff65c3, 0 0 48px 2px #ff65c399;
+  }
+
+  .animate-float {
+    animation: float 3.2s ease-in-out infinite;
+  }
+
+  .animate-star-twinkle {
+    animation: starTwinkle 2s infinite alternate;
+  }
+
+  .bg-neon-bg {
+    background-image: linear-gradient(135deg, #231557 0%, #44107a 29%, #21d4fd 67%, #39ff14 100%);
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  @keyframes starTwinkle {
+    0% { opacity: 0.8; filter: blur(0px); }
+    50% { opacity: 1; filter: blur(1px); }
+    100% { opacity: 0.5; filter: blur(0px); }
+  }
+}
+
+
+/* Custom scrollbar hide utility for messages */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
