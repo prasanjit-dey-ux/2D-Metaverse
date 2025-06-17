@@ -6,8 +6,8 @@ export const userRouter = Router();
 
 userRouter.use(requireAuth);
 
-userRouter.post("/metadata", updateMetadata);
+//Route for updating user metadata (profile)
+userRouter.put("/update-profile", updateMetadata);
 
-// userRouter.get("/metadata/bulk");
-
+// Route for getting the current user's profile data
 userRouter.get("/me", getCurrentUser);

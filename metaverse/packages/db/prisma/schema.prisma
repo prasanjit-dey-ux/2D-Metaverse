@@ -29,6 +29,9 @@ model User {
   avatar            Avatar?        @relation(fields: [avatarId], references: [id])
   provider          AuthProvider   @default(EMAIL) 
   providerId        String?        @unique
+  createdAt         DateTime       @default(now()) 
+  updatedAt         DateTime       @updatedAt 
+  lastLoginAt       DateTime?
   
   @@unique([username, tag])
   @@unique([provider, providerId])
@@ -45,9 +48,8 @@ model Otp {
 model Space {
   id          String        @id @unique @default(cuid())
   name        String
-  width       Int           // Width is stored directly on Space, as provided by frontend from Map selection
-  height      Int           // Changed from Int? to Int, as frontend provides this from Map selection
-  // Removed: thumbnail String? - This property should be accessed via the 'map' relation
+  width       Int           
+  height      Int           
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 

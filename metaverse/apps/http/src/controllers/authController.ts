@@ -1,111 +1,40 @@
-import { Request, Response}  from "express";
-import { requestOtpSchema, verifyOtpSchema } from "../types/authSchema";
-import { githubAuthService, requestOtpInput, verifyOtpInput } from "../service/authService";
-import { ZodError } from "zod";
-import { googleAuthService } from "../service/authService";
+// apps/http/src/controllers/authController.ts
+import { Request, Response } from "express";
+import { googleAuthService, githubAuthService } from "../service/authService";
+// Removed imports for requestOtpInput, verifyOtpInput as they are no longer in use
+// import { RequestOtpInput, VerifyOtpInput } from "../types/authSchema"; // Assuming these were here previously
 
-export const requestOtp = async (req: Request, res: Response): Promise<void> => {
-    try{
-        // Validate req.body using Zod schema
-        const input = requestOtpSchema.parse(req.body)
-        
-        // Call service with validated input
-        const result = await requestOtpInput(input);
 
-        res.status(200).json(result);
-    } catch (err) {
-          // If it's a Zod validation error, send a 400 response with validation details
-        if (err instanceof ZodError) {
-            res.status(400).json({ error: err.errors })
-            return;
-        }
-        
-        // If some other error, send a generic 500 Internal Server Error  
-        if (err instanceof Error) {
-            res.status(500).json({ error: err.message });
-            return; 
-          }
-
-        //Catch-all fallback
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-}
-
-export const verifyOtp  = async (req: Request, res: Response): Promise<void> => {
-    try{
-        const input = verifyOtpSchema.parse(req.body);
-        const result = await verifyOtpInput(input);
-
-        res.status(200).json(result);
-    } catch (err) {
-        if (err instanceof ZodError) {
-            res.status(400).json({ error: err.errors})
-            return;
-        }
-
-        if (err instanceof Error) {
-            res.status(500).json({ error: err.message});
-            return;
-        }
-
-        res.status(500).json({error: "Internal Server Error"})
-    }
-}
-
+// This function handles Google OAuth callback/login
 export const googleAuth = async (req: Request, res: Response): Promise<void> => {
-    try{
+    try {
         const { idToken } = req.body;
-
-        if(!idToken) {
-            res.status(400).json({ error: "idToken is required" });
+        if (!idToken) {
+            res.status(400).json({ error: "Google ID token is required." });
             return;
-        } 
 
-        const result = await googleAuthService(idToken);
-
-        res.status(200).json(result);
-    } catch (err) {
-        if(err instanceof Error) {
-            res.status(500).json({ error: err.message });
-        } else {
-            res.status(500).json({ error: "Internal Server Error"});
         }
+        const result = await googleAuthService(idToken);
+        res.json(result);
+    } catch (error: any) {
+        console.error("Google Auth Error:", error);
+        res.status(500).json({ error: error.message || "Google authentication failed." });
     }
 };
 
+// This function handles GitHub OAuth callback/login
 export const githubAuth = async (req: Request, res: Response): Promise<void> => {
     try {
-        console.log("=== GitHub Auth Controller ===");
-        console.log("Request body:", req.body);
-        console.log("Headers:", req.headers);
-
         const { code } = req.body;
-
         if (!code) {
-            console.log("No code provided");
-            res.status(400).json({ error: "GitHub OAuth code is required" });
-            return;
+            res.status(400).json({ error: "GitHub authorization code is required." });
+            return
         }
-
-        if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
-            console.error("Missing GitHub OAuth credentials");
-            res.status(500).json({ error: "GitHub OAuth not properly configured" });
-            return;
-        }
-
-        console.log("Calling GitHub auth service...");
         const result = await githubAuthService(code);
-        console.log("GitHub auth successful, sending response");
-        
-        res.status(200).json(result);
-    } catch (err) {
-        console.error("=== GitHub Auth Controller Error ===");
-        console.error("Error:", err);
-        
-        if (err instanceof Error) {
-            res.status(500).json({ error: err.message });
-        } else {
-            res.status(500).json({ error: "Internal Server Error" });
-        }
+        res.json(result);
+    } catch (error: any) {
+        console.error("GitHub Auth Error:", error);
+        res.status(500).json({ error: error.message || "GitHub authentication failed." });
     }
 };
+
