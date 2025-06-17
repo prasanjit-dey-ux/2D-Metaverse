@@ -75,20 +75,37 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
 
 export const githubAuth = async (req: Request, res: Response): Promise<void> => {
     try {
+        console.log("=== GitHub Auth Controller ===");
+        console.log("Request body:", req.body);
+        console.log("Headers:", req.headers);
+
         const { code } = req.body;
 
         if (!code) {
-            res.status(400).json({ error: "Github OAuth code is required"});
+            console.log("No code provided");
+            res.status(400).json({ error: "GitHub OAuth code is required" });
             return;
         }
 
+        if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
+            console.error("Missing GitHub OAuth credentials");
+            res.status(500).json({ error: "GitHub OAuth not properly configured" });
+            return;
+        }
+
+        console.log("Calling GitHub auth service...");
         const result = await githubAuthService(code);
+        console.log("GitHub auth successful, sending response");
+        
         res.status(200).json(result);
     } catch (err) {
+        console.error("=== GitHub Auth Controller Error ===");
+        console.error("Error:", err);
+        
         if (err instanceof Error) {
-            res.status(500).json({ error: err.message});
+            res.status(500).json({ error: err.message });
         } else {
-            res.status(500).json({ error: "Internal Server Error"});
+            res.status(500).json({ error: "Internal Server Error" });
         }
     }
 };
