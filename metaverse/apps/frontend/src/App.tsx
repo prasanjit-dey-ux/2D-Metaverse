@@ -12,7 +12,7 @@ export default function App() {
     <Routes>
       {/* Landing page for unauthenticated users (or initial entry) */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/github/callback" element={<GithubCallback />} />
+      <Route path="/auth/github/callback" element={<GithubCallback />} />
       <Route path="/signin" element={<Signin />} />
       <Route path="/user-info" element={<UserInfoForm/>}/>
       {/* Dashboard is the central hub for authenticated users */}
