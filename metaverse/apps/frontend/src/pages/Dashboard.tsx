@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-// IMPORTANT: Import the actual avatars array, ensure its path is correct
 import { avatars } from "./Game/avatars"; 
 
 // Define backend API URL from environment variables
@@ -83,7 +82,9 @@ export default function Dashboard() {
 
     const [creatingSpace, setCreatingSpace] = useState(false);
     const [createSpaceError, setCreateSpaceError] = useState<string | null>(null);
-    const [createdSpaceLink, setCreatedSpaceLink] = useState<string | null>(null);
+    
+    // UPDATED: Only keep the state for the raw Space ID
+    const [sharedSpaceIdOnly, setSharedSpaceIdOnly] = useState<string | null>(null);
 
     // States for Join Space by ID
     const [joinSpaceId, setJoinSpaceId] = useState<string>("");
@@ -121,9 +122,7 @@ export default function Dashboard() {
                 });
                 setAvailableMaps(mapsRes.data.maps || []);
                 // Set initial selected map if available and nothing is selected yet
-                if (selectedMap === null && mapsRes.data.maps && mapsRes.data.maps.length > 0) {
-                    setSelectedMap(mapsRes.data.maps[0]);
-                }
+                setSelectedMap(prev => prev || (mapsRes.data.maps && mapsRes.data.maps.length > 0 ? mapsRes.data.maps[0] : null));
 
                 // --- Define/Fetch Available Avatars (for selection) ---
                 const mappedAvatars: Avatar[] = avatars.map((avatar) => ({
@@ -135,9 +134,7 @@ export default function Dashboard() {
                 }));
                 setAvailableAvatars(mappedAvatars);
                 // Set initial selected avatar if available and nothing is selected yet
-                if (selectedAvatar === null && mappedAvatars.length > 0) {
-                    setSelectedAvatar(mappedAvatars[0]);
-                }
+                setSelectedAvatar(prev => prev || (mappedAvatars.length > 0 ? mappedAvatars[0] : null));
 
             } catch (err: unknown) {
                 console.error("Failed to load dashboard data:", err);
@@ -165,7 +162,9 @@ export default function Dashboard() {
         e.preventDefault();
         setCreatingSpace(true);
         setCreateSpaceError(null);
-        setCreatedSpaceLink(null); 
+        
+        // UPDATED: Only clear the raw Space ID state
+        setSharedSpaceIdOnly(null);
 
         // Input validation
         if (!newSpaceName.trim()) {
@@ -219,13 +218,14 @@ export default function Dashboard() {
                 updatedAt: createdSpace.updatedAt,
             }]);
 
+            // UPDATED: Set only the raw Space ID
+            setSharedSpaceIdOnly(createdSpace.id);
+
             // Reset modal form fields
             setNewSpaceName("");
             setSelectedMap(availableMaps.length > 0 ? availableMaps[0] : null); 
             setSelectedAvatar(availableAvatars.length > 0 ? availableAvatars[0] : null); 
-
-            // Set the created space's shareable link including the selected avatar's ID
-            setCreatedSpaceLink(`${window.location.origin}/space/${createdSpace.id}?avatarId=${selectedAvatar.id}`);
+            
             showTemporaryMessage("Space created successfully!", 'success'); // Show success message
 
         } catch (err: unknown) {
@@ -310,50 +310,51 @@ export default function Dashboard() {
         setSelectedMap(availableMaps.length > 0 ? availableMaps[0] : null); 
         setSelectedAvatar(availableAvatars.length > 0 ? availableAvatars[0] : null); 
         setCreateSpaceError(null); 
-        setCreatedSpaceLink(null); 
+        // UPDATED: Only clear the raw Space ID state
+        setSharedSpaceIdOnly(null);
         setIsCreateModalOpen(true);
     };
 
     // Function to close the Create Space modal
     const closeCreateModal = () => {
         setIsCreateModalOpen(false);
-        setCreatedSpaceLink(null); 
+        // UPDATED: Only clear the raw Space ID state
+        setSharedSpaceIdOnly(null);
     };
 
-    // Function to copy text to clipboard 
-    const copyToClipboard = () => {
-        if (createdSpaceLink) {
-            try {
-                // Use the more modern and reliable Clipboard API if available, fallback to execCommand
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(createdSpaceLink)
-                        .then(() => showTemporaryMessage("Link copied to clipboard!", 'success'))
-                        .catch(e => {
-                            console.error("Failed to copy link with navigator.clipboard: ", e);
-                            fallbackCopyTextToClipboard(createdSpaceLink); // Fallback
-                        });
-                } else {
-                    fallbackCopyTextToClipboard(createdSpaceLink); // Fallback
-                }
-            } catch (err) {
-                console.error("Error setting up copy to clipboard: ", err);
-                showTemporaryMessage("Failed to copy link.", 'error');
+    // Function to copy text to clipboard (general purpose)
+    // This function is correctly defined and called now.
+    const copyToClipboard = (textToCopy: string, successMessage: string) => {
+        if (!textToCopy) return;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy)
+                    .then(() => showTemporaryMessage(successMessage, 'success'))
+                    .catch(e => {
+                        console.error("Failed to copy link with navigator.clipboard: ", e);
+                        fallbackCopyTextToClipboard(textToCopy, successMessage);
+                    });
+            } else {
+                fallbackCopyTextToClipboard(textToCopy, successMessage);
             }
+        } catch (err) {
+            console.error("Error setting up copy to clipboard: ", err);
+            showTemporaryMessage("Failed to copy text.", 'error'); // More generic message
         }
     };
 
     // Fallback for copying text to clipboard (document.execCommand is deprecated but more compatible in iframes)
-    const fallbackCopyTextToClipboard = (text: string) => {
+    const fallbackCopyTextToClipboard = (text: string, successMessage: string) => {
         const tempInput = document.createElement('input');
         tempInput.value = text;
         document.body.appendChild(tempInput);
         tempInput.select();
         try {
             document.execCommand('copy');
-            showTemporaryMessage("Link copied to clipboard!", 'success');
+            showTemporaryMessage(successMessage, 'success');
         } catch (err) {
-            console.error("Failed to copy link using document.execCommand: ", err);
-            showTemporaryMessage("Failed to copy link (execCommand fallback).", 'error');
+            console.error("Failed to copy text using document.execCommand: ", err);
+            showTemporaryMessage("Failed to copy text (execCommand fallback).", 'error');
         } finally {
             document.body.removeChild(tempInput);
         }
@@ -394,8 +395,8 @@ export default function Dashboard() {
             {/* Top Navbar */}
             <nav className="fixed top-0 left-0 w-full bg-white shadow-md p-4 flex justify-between items-center z-40">
                 <div className="flex items-center">
-                    <img src="https://placehold.co/30x30/4A90E2/ffffff?text=CV" alt="Logo" className="w-8 h-8 mr-2 rounded-full" />
-                    <span className="text-xl font-bold text-gray-800">ConnectVerse</span>
+                    <img src="https://placehold.co/30x30/4A90E2/ffffff?text=PV" alt="Logo" className="w-8 h-8 mr-2 rounded-full" />
+                    <span className="text-xl font-bold text-gray-800">PixelVerse</span>
                 </div>
                 <div className="flex items-center space-x-4">
                     <button onClick={() => navigate('/user-info')} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors">
@@ -446,7 +447,7 @@ export default function Dashboard() {
                                     onClick={() => setSelectedAvatar(avatar)}
                                 >
                                     <img src={avatar.imageUrl} alt={avatar.name} className="w-16 h-16 object-contain rounded-full mb-1.5" />
-                                    <span className="text-sm font-medium text-gray-700">{avatar.name}</span>
+                                    <span className="text-sm font-medium text-gray-700 text-center">{avatar.name}</span>
                                 </div>
                             ))
                         )}
@@ -475,23 +476,42 @@ export default function Dashboard() {
                                 <button onClick={closeCreateModal} className="bg-transparent border-none text-gray-500 text-xl cursor-pointer hover:text-gray-800 transition-colors">X</button>
                             </div>
 
-                            {createdSpaceLink ? (
+                            {sharedSpaceIdOnly ? ( // Check if space was successfully created and ID is available
                                 <div className="flex flex-col items-center gap-4 p-5 bg-green-50 rounded-lg border border-green-300">
                                     <p className="text-green-700 text-lg font-bold text-center mb-4">Space created successfully!</p>
-                                    <p className="bg-gray-100 p-4 rounded-lg mb-5 break-all text-center text-sm w-full">
-                                        Share this link: <span className="font-bold text-blue-700">{createdSpaceLink}</span>
-                                    </p>
-                                    <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
-                                        <button onClick={copyToClipboard} className="px-5 py-2 bg-teal-600 text-white font-bold rounded-md cursor-pointer text-base hover:bg-teal-700 transition-colors flex-1">
-                                            Copy Link
-                                        </button>
-                                        <button onClick={() => navigate(createdSpaceLink.slice(window.location.origin.length), { replace: true })} className="px-5 py-2 bg-blue-600 text-white font-bold rounded-md cursor-pointer text-base hover:bg-blue-700 transition-colors flex-1">
+                                    
+                                    {/* Display only Space ID */}
+                                    <div className="w-full text-center">
+                                        <p className="font-semibold text-gray-700 mb-2">Share this Space ID:</p>
+                                        <div className="flex items-center bg-gray-100 p-3 rounded-lg break-all text-sm">
+                                            <span className="flex-grow text-gray-800 text-left">{sharedSpaceIdOnly}</span>
+                                            <button 
+                                                onClick={() => copyToClipboard(sharedSpaceIdOnly, "Space ID copied!")}
+                                                className="ml-3 px-3 py-1 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors text-xs"
+                                            >
+                                                Copy
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row gap-3 w-full justify-center mt-5">
+                                        <button 
+                                            onClick={() => {
+                                                // Creator enters with their selected avatar
+                                                if (sharedSpaceIdOnly && selectedAvatar) { 
+                                                    navigate(`/space/${sharedSpaceIdOnly}?avatarId=${selectedAvatar.id}`, { replace: true });
+                                                } else {
+                                                    showTemporaryMessage("Error: Cannot enter space (missing ID or avatar).", 'error');
+                                                }
+                                            }} 
+                                            className="px-5 py-2 bg-blue-600 text-white font-bold rounded-md cursor-pointer text-base hover:bg-blue-700 transition-colors flex-1"
+                                        >
                                             Enter Space Now
                                         </button>
+                                        <button onClick={closeCreateModal} className="px-5 py-2 bg-gray-500 text-white font-bold rounded-md cursor-pointer text-base hover:bg-gray-600 transition-colors flex-1">
+                                            Done
+                                        </button>
                                     </div>
-                                    <button onClick={closeCreateModal} className="mt-4 px-5 py-2 bg-gray-500 text-white font-bold rounded-md cursor-pointer text-base hover:bg-gray-600 transition-colors">
-                                        Done
-                                    </button>
                                 </div>
                             ) : (
                                 <form onSubmit={handleCreateSpace} className="flex flex-col gap-4">
