@@ -3,7 +3,7 @@ import React from "react";
 import { User, Users } from "lucide-react";
 
 const socials = [
-  { name: "GitHub", url: "https://github.com", icon: <User className="w-4 h-4" /> },
+  { name: "GitHub", url: "https://github.com/prasanjit-dey-ux", icon: <User className="w-4 h-4" /> },
   { name: "Discord", url: "#", icon: <Users className="w-4 h-4" /> },
 ];
 
