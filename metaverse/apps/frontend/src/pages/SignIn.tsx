@@ -1,6 +1,6 @@
-// apps/frontend/src/pages/Signin.tsx
+// apps/frontend/src/pages/SignIn.tsx
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 
@@ -9,12 +9,22 @@ const BACKEND_API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:50
 export default function Signin() {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
-    const navigate = useNavigate(); // Initialize useNavigate
+    const navigate = useNavigate();
+
+    // Helper function for consistent login success handling
+    const handleLoginSuccess = (token: string, profileComplete: boolean) => {
+        localStorage.setItem("token", token);
+        if (profileComplete) {
+            navigate("/dashboard", { replace: true }); 
+        } else {
+            navigate("/user-info", { replace: true }); 
+        }
+    };
 
     const handleGoogleSuccess = async (response: { credential?: string }) => {
         console.log("Google Login Success Response:", response);
         setLoading(true);
-        setErrors([]);
+        setErrors([]); 
         try {
             if (!response.credential) {
                 setErrors(["Google login failed: No credential found."]);
@@ -26,14 +36,7 @@ export default function Signin() {
             console.log("Backend Google Auth Response:", res.data);
 
             if (res.data.token) {
-                localStorage.setItem("token", res.data.token);
-                alert("Google login success!");
-                
-                if(res.data.profileComplete){ // Note: assuming profileComplete is directly on res.data
-                    navigate("/dashboard");
-                } else {
-                    navigate("/user-info");
-                }
+                handleLoginSuccess(res.data.token, res.data.profileComplete); 
             } else {
                 setErrors([res.data.error || "Google login failed: Unexpected response."]);
             }
@@ -55,27 +58,26 @@ export default function Signin() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background-deep px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 p-8 bg-ui-background rounded-xl shadow-2xl animate-fade-in-up">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-text-primary animate-fade-in">
-                        Sign In to ConnectVerse
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-text-secondary">
-                        Or {" "}
-                        <Link to="/signin" className="font-medium text-primary-accent hover:text-secondary-accent transition-colors duration-200">
-                            create an account
-                        </Link>
-                    </p>
-                    <div className="text-center p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md mt-4">
-                        <p className="font-semibold mb-2">Email/OTP login is temporarily disabled.</p>
-                        <p className="text-sm">Please use Google or GitHub to sign in for now.</p>
+        <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white font-sans p-4">
+            {/* Main Container Card */}
+            <div className="max-w-md w-full bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-8 border border-gray-700 transform transition-all duration-300 hover:scale-[1.01]">
+                <div className="text-center">
+                    {/* Logo/Icon */}
+                    <div className="flex justify-center mb-4">
+                        <img src="https://placehold.co/60x60/4A90E2/ffffff?text=CV" alt="PixelVerse Logo" className="w-16 h-16 rounded-full shadow-lg" />
                     </div>
+                    <h2 className="text-3xl font-extrabold text-blue-300 animate-fade-in">
+                        Welcome to PixelVerse
+                    </h2>
+                    <p className="mt-2 text-md text-gray-400">
+                        Sign in to explore virtual worlds
+                    </p>
                 </div>
-                
+
+                {/* Error Display */}
                 {errors.length > 0 && (
-                    <div className="bg-error-background p-3 rounded-md">
-                        <ul className="list-disc list-inside text-error-color text-sm">
+                    <div className="bg-red-900 border border-red-700 text-red-300 p-4 rounded-lg text-sm text-center">
+                        <ul className="list-none p-0 m-0">
                             {errors.map((err, index) => (
                                 <li key={index}>{err}</li>
                             ))}
@@ -83,41 +85,39 @@ export default function Signin() {
                     </div>
                 )}
 
-                <div className="mt-6">
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-border-color" />
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-2 bg-ui-background text-text-secondary">Continue with</span>
-                        </div>
-                    </div>
-
-                    <div className="mt-6 flex flex-col items-center gap-3">
-                        {/* Google Login Button (disabled prop removed, it's not supported by this component) */}
-                        <div className="w-full max-w-[240px]">
+                {/* Social Login Options */}
+                <div className="space-y-4">
+                    {/* Common wrapper for both buttons to ensure consistent width and centering */}
+                    <div className="flex flex-col items-center gap-4"> 
+                        {/* Google Login Button */}
+                        <div className="w-full max-w-xs"> {/* Adjusted max-w to match GitHub button visual size */}
                             <GoogleLogin
                                 onSuccess={handleGoogleSuccess}
                                 onError={handleGoogleError}
+                                text="continue_with" // More generic text
+                                shape="pill"
+                                theme="filled_blue"
+                                size="large"
                             />
                         </div>
 
-                        {/* GitHub Login Button (disabled prop retained) */}
+                        {/* GitHub Login Button */}
                         <button
                             type="button"
                             onClick={() => {
                                 if (loading) return;
                                 setLoading(true);
                                 window.location.href = `https://github.com/login/oauth/authorize?client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID}&redirect_uri=${window.location.origin}/auth/github/callback` +
-                                    // --- ADDED read:user SCOPE HERE ---
-                                    `&scope=user:email read:user`; // IMPORTANT: Add read:user scope
-                                // ------------------------------------
+                                    `&scope=user:email read:user`; 
                             }}
-                            className="w-full max-w-[240px] flex items-center justify-center px-4 py-2 border border-border-color rounded-md shadow-sm text-sm font-medium text-text-primary bg-ui-secondary-background hover:bg-ui-background transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            // Adjusted styling to be more like a filled blue Google button, but with GitHub colors
+                            className="w-full max-w-xs flex items-center justify-center px-6 py-3 border border-gray-600 rounded-full shadow-md text-lg font-semibold text-white bg-gray-700 hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
                             disabled={loading}
                         >
-                            <img src="https://www.svgrepo.com/show/512317/github-142.svg" alt="GitHub" className="h-5 w-5 mr-2" />
-                            {loading ? "Redirecting..." : "GitHub"}
+                            <svg className="h-6 w-6 mr-3" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.499.09.679-.217.679-.481 0-.237-.01-1.096-.016-1.936-2.775.604-3.364-1.392-3.364-1.392-.454-1.156-1.11-1.46-1.11-1.46-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.931 0-1.09.39-1.984 1.029-2.682-.107-.253-.448-1.275.097-2.651 0 0 .84-.27 2.75 1.025.79-.22 1.63-.33 2.47-.33.84 0 1.68.11 2.47.33 1.909-1.296 2.747-1.025 2.747-1.025.546 1.376.202 2.398.099 2.651.64.698 1.028 1.592 1.028 2.682 0 3.829-2.339 4.675-4.566 4.922.359.307.678.915.678 1.846 0 1.334-.012 2.41-.012 2.737 0 .267.178.577.687.479C19.137 20.207 22 16.44 22 12.017 22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+                            </svg>
+                            {loading ? "Redirecting..." : "Sign in with GitHub"}
                         </button>
                     </div>
                 </div>
