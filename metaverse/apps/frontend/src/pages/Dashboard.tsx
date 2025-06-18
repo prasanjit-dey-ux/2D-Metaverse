@@ -83,7 +83,7 @@ export default function Dashboard() {
     const [creatingSpace, setCreatingSpace] = useState(false);
     const [createSpaceError, setCreateSpaceError] = useState<string | null>(null);
     
-    // UPDATED: Only keep the state for the raw Space ID
+    // Correct state variable for sharing (only Space ID)
     const [sharedSpaceIdOnly, setSharedSpaceIdOnly] = useState<string | null>(null);
 
     // States for Join Space by ID
@@ -154,7 +154,7 @@ export default function Dashboard() {
         fetchDashboardData();
         // ESLint fix: Include selectedMap and selectedAvatar in dependencies because they are used in the initial selection logic
         // Also include navigate for consistency, though it's stable.
-    }, [navigate]);
+    }, [navigate, selectedMap, selectedAvatar]);
 
 
     // Function to handle creating a new space
@@ -163,7 +163,7 @@ export default function Dashboard() {
         setCreatingSpace(true);
         setCreateSpaceError(null);
         
-        // UPDATED: Only clear the raw Space ID state
+        // Clear the raw Space ID state
         setSharedSpaceIdOnly(null);
 
         // Input validation
@@ -212,13 +212,12 @@ export default function Dashboard() {
                 name: createdSpace.name,
                 width: createdSpace.width,
                 height: createdSpace.height,
-                // Ensure thumbnail comes from map association if needed here, or if backend returns it
                 thumbnail: selectedMap.thumbnailUrl, 
                 createdAt: createdSpace.createdAt,
                 updatedAt: createdSpace.updatedAt,
             }]);
 
-            // UPDATED: Set only the raw Space ID
+            // Set only the raw Space ID
             setSharedSpaceIdOnly(createdSpace.id);
 
             // Reset modal form fields
@@ -310,7 +309,7 @@ export default function Dashboard() {
         setSelectedMap(availableMaps.length > 0 ? availableMaps[0] : null); 
         setSelectedAvatar(availableAvatars.length > 0 ? availableAvatars[0] : null); 
         setCreateSpaceError(null); 
-        // UPDATED: Only clear the raw Space ID state
+        // Only clear the raw Space ID state
         setSharedSpaceIdOnly(null);
         setIsCreateModalOpen(true);
     };
@@ -318,7 +317,7 @@ export default function Dashboard() {
     // Function to close the Create Space modal
     const closeCreateModal = () => {
         setIsCreateModalOpen(false);
-        // UPDATED: Only clear the raw Space ID state
+        // Only clear the raw Space ID state
         setSharedSpaceIdOnly(null);
     };
 
@@ -391,101 +390,155 @@ export default function Dashboard() {
 
     // Main Dashboard Render
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col font-sans">
+        <div className="min-h-screen bg-metaverse-bg flex flex-col font-pixel">
             {/* Top Navbar */}
-            <nav className="fixed top-0 left-0 w-full bg-white shadow-md p-4 flex justify-between items-center z-40">
-                <div className="flex items-center">
-                    <img src="https://placehold.co/30x30/4A90E2/ffffff?text=PV" alt="Logo" className="w-8 h-8 mr-2 rounded-full" />
-                    <span className="text-xl font-bold text-gray-800">PixelVerse</span>
+            <nav className="fixed top-0 left-0 w-full shadow-md p-4 flex justify-between items-center z-40 bg-metaverse-bg border-b border-white">
+                <div className="flex items-center gap-2">
+                    <span
+                        className="font-pixel text-xl tracking-tighter text-white bg-neon-green p-1 rounded-md"
+                        style={{ textShadow: "0 0 3px #fff" }}
+                    >
+                        M2
+                    </span>
+                    <span 
+                    className="text-xl font-bold text-neon-green font-pixel ">
+                        Pixelverse
+                    </span>
                 </div>
                 <div className="flex items-center space-x-4">
-                    <button onClick={() => navigate('/user-info')} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <img 
-                            src={profileImage} 
-                            alt="Profile" 
-                            className="w-10 h-10 rounded-full object-cover border-2 border-blue-500" 
-                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/40x40/aabbcc/ffffff?text=U'; }}
+                    <button
+                        onClick={() => navigate("/user-info")}
+                        className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                        <img
+                            src={profileImage}
+                            alt="Profile"
+                            className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                    "https://placehold.co/40x40/aabbcc/ffffff?text=U";
+                            }}
                         />
-                        <span className="text-gray-700 font-semibold hidden sm:inline">{displayUserName}</span>
+                        {/* Removed: <span className="text-neon-green font-semibold hidden sm:inline ">{displayUserName}</span> */}
                     </button>
-                    <button onClick={handleLogout} className="px-3 py-2 bg-red-600 text-white font-bold rounded-md cursor-pointer text-sm hover:bg-red-700 transition-colors">Logout</button>
+                    <button
+                        onClick={handleLogout}
+                        className="px-3 py-2 bg-neon-green font-bold rounded-md cursor-pointer text-sm hover:bg- transition-colors hover:text-white"
+                    >
+                        Logout
+                    </button>
                 </div>
             </nav>
-
+    
             {/* Main Content Area (with padding to clear fixed navbar) */}
-            <div className="flex-grow max-w-screen-md mx-auto my-10 p-8 pt-20 border border-gray-200 rounded-lg shadow-md bg-white"> {/* Adjusted pt-20 for navbar */}
-                <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Welcome {displayUserName}!</h2>
-
+            <div className="flex-grow w-[800px] mx-auto my-10 p-8 pt-24 rounded-lg shadow-md bg-metaverse-bg">
+                {" "}
+                <h2 className="text-2xl font-bold text-white mb-8 text-center">
+                    Welcome {displayUserName}!
+                </h2>
                 {/* Section for Joining a Space by ID */}
-                <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50">
-                    <h3 className="text-xl font-semibold mb-4 text-gray-700">Join Existing Space</h3>
-                    <form onSubmit={handleJoinSpace} className="flex flex-col sm:flex-row gap-4 mb-4">
+                <div className="mb-8 p-6 border border-gray-500 rounded-lg bg-gray-900">
+                    <h3 className="text-xl font-semibold mb-4 text-white">
+                        Join Existing Space
+                    </h3>
+                    <form
+                        onSubmit={handleJoinSpace}
+                        className="flex flex-col sm:flex-row gap-4 mb-4"
+                    >
                         <input
                             type="text"
                             value={joinSpaceId}
                             onChange={(e) => setJoinSpaceId(e.target.value)}
                             placeholder="Enter Space ID"
-                            className="flex-grow p-3 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-grow p-3 border border-gray-500 bg-gray-800 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required
                         />
-                        <button type="submit" className="px-5 py-3 bg-gray-600 text-white font-bold rounded-md cursor-pointer text-base hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled={!selectedAvatar}>
+                        <button
+                            type="submit"
+                            className="px-5 py-3 bg-gray-600 text-white font-bold rounded-md cursor-pointer text-base hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!selectedAvatar}
+                        >
                             Join Space
                         </button>
                     </form>
-                    {joinSpaceError && <p className="text-red-500 text-sm mt-1">{joinSpaceError}</p>}
-                    
-                    <label className="font-semibold mb-2 block mt-4 text-gray-700">Select Your Avatar for Joining:</label>
-                    <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-4 p-2 border border-gray-200 rounded-md bg-white">
+                    {joinSpaceError && (
+                        <p className="text-red-500 text-sm mt-1">{joinSpaceError}</p>
+                    )}
+            
+                    <label className="font-semibold mb-2 block mt-4 text-gray-700">
+                        Select Your Avatar for Joining:
+                    </label>
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-10 p-2 border border-gray-200 rounded-md bg-white">
                         {availableAvatars.length === 0 ? (
-                            <p className="text-gray-500 text-center col-span-full">No avatars available.</p>
+                            <p className="text-gray-500 text-center col-span-full">
+                                No avatars available.
+                            </p>
                         ) : (
                             availableAvatars.map((avatar) => (
                                 <div
                                     key={avatar.id}
-                                    className={`flex flex-col items-center p-2 rounded-lg bg-gray-50 cursor-pointer transition-transform duration-200 hover:scale-105 
-                                        ${selectedAvatar?.id === avatar.id ? 'border-2 border-blue-500' : 'border border-gray-300'}`}
+                                    className={`flex w-24 flex-col items-center p-2 rounded-lg bg-gray-50 cursor-pointer transition-transform duration-200 hover:scale-105 
+                                        ${selectedAvatar?.id === avatar.id ? "border-2 border-blue-500" : "border border-gray-300"}`}
                                     onClick={() => setSelectedAvatar(avatar)}
                                 >
-                                    <img src={avatar.imageUrl} alt={avatar.name} className="w-16 h-16 object-contain rounded-full mb-1.5" />
-                                    <span className="text-sm font-medium text-gray-700 text-center">{avatar.name}</span>
+                                    <img
+                                        src={avatar.imageUrl}
+                                        alt={avatar.name}
+                                        className="w-16 h-16 object-contain rounded-full mb-1.5"
+                                    />
+                                    <span className="text-xs font-medium text-gray-700">
+                                        {avatar.name}
+                                    </span>
                                 </div>
                             ))
                         )}
                     </div>
                 </div>
-
                 {/* Section for Creating a New Space (opens modal) */}
-                <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50">
-                    <h3 className="text-xl font-semibold mb-4 text-gray-700">Create New Space</h3>
-                    <button onClick={() => {
-                        openCreateModal();
-                        setJoinSpaceId("");
-                        setJoinSpaceError(null);
-                    }} className="px-6 py-3 bg-green-600 text-white font-bold rounded-md cursor-pointer text-lg block mx-auto hover:bg-green-700 transition-colors">
+                <div className="mb-8 p-4 border border-gray-200 rounded-lg shadow-xl bg-gray-50 flex items-center justify-between">
+                    <h3 className="text-xl font-semibold text-gray-700 font-pixel">
+                        Create New Space
+                    </h3>
+                    <button
+                        onClick={() => {
+                            openCreateModal();
+                            setJoinSpaceId("");
+                            setJoinSpaceError(null);
+                        }}
+                        className="px-2 py-2 bg-green-600 text-white font-bold rounded-md cursor-pointer text-lg block  hover:bg-green-700 transition-colors "
+                    >
                         Create New Space
                     </button>
                 </div>
-
-
                 {/* Modal for Creating a New Space */}
                 {isCreateModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
                         <div className="bg-white p-8 rounded-lg shadow-2xl w-11/12 max-w-lg max-h-[90vh] overflow-y-auto relative">
-                            <div className="flex justify-between items-center mb-5 pb-2 border-b border-gray-200">
-                                <h3 className="text-xl font-bold text-gray-800">Create Your New Space</h3>
-                                <button onClick={closeCreateModal} className="bg-transparent border-none text-gray-500 text-xl cursor-pointer hover:text-gray-800 transition-colors">X</button>
+                            <div className="flex justify-between items-center mb-5 pb-2 border-b border-gray-200 ">
+                                <h3 className="text-xl font-bold text-gray-800">
+                                    Create Your New Space
+                                </h3>
+                                <button
+                                    onClick={closeCreateModal}
+                                    className="bg-transparent border-none text-gray-500 text-xl cursor-pointer hover:text-gray-800 transition-colors"
+                                >
+                                    X
+                                </button>
                             </div>
-
-                            {sharedSpaceIdOnly ? ( // Check if space was successfully created and ID is available
+                    
+                            {sharedSpaceIdOnly ? ( // This condition now correctly checks sharedSpaceIdOnly
                                 <div className="flex flex-col items-center gap-4 p-5 bg-green-50 rounded-lg border border-green-300">
-                                    <p className="text-green-700 text-lg font-bold text-center mb-4">Space created successfully!</p>
-                                    
-                                    {/* Display only Space ID */}
+                                    <p className="text-green-700 text-lg font-bold text-center mb-4">
+                                        Space created successfully!
+                                    </p>
                                     <div className="w-full text-center">
                                         <p className="font-semibold text-gray-700 mb-2">Share this Space ID:</p>
                                         <div className="flex items-center bg-gray-100 p-3 rounded-lg break-all text-sm">
-                                            <span className="flex-grow text-gray-800 text-left">{sharedSpaceIdOnly}</span>
-                                            <button 
+                                            <span className="flex-grow text-gray-800 text-left">
+                                                {sharedSpaceIdOnly} {/* Correctly displays sharedSpaceIdOnly */}
+                                            </span>
+                                            <button
+                                                // Correctly calls copyToClipboard with arguments
                                                 onClick={() => copyToClipboard(sharedSpaceIdOnly, "Space ID copied!")}
                                                 className="ml-3 px-3 py-1 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors text-xs"
                                             >
@@ -493,29 +546,37 @@ export default function Dashboard() {
                                             </button>
                                         </div>
                                     </div>
-
+                    
                                     <div className="flex flex-col sm:flex-row gap-3 w-full justify-center mt-5">
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 // Creator enters with their selected avatar
-                                                if (sharedSpaceIdOnly && selectedAvatar) { 
+                                                if (sharedSpaceIdOnly && selectedAvatar) {
                                                     navigate(`/space/${sharedSpaceIdOnly}?avatarId=${selectedAvatar.id}`, { replace: true });
                                                 } else {
                                                     showTemporaryMessage("Error: Cannot enter space (missing ID or avatar).", 'error');
                                                 }
-                                            }} 
+                                            }}
                                             className="px-5 py-2 bg-blue-600 text-white font-bold rounded-md cursor-pointer text-base hover:bg-blue-700 transition-colors flex-1"
                                         >
                                             Enter Space Now
                                         </button>
-                                        <button onClick={closeCreateModal} className="px-5 py-2 bg-gray-500 text-white font-bold rounded-md cursor-pointer text-base hover:bg-gray-600 transition-colors flex-1">
+                                        <button
+                                            onClick={closeCreateModal}
+                                            className="px-5 py-2 bg-gray-500 text-white font-bold rounded-md cursor-pointer text-base hover:bg-gray-600 transition-colors flex-1"
+                                        >
                                             Done
                                         </button>
                                     </div>
                                 </div>
                             ) : (
-                                <form onSubmit={handleCreateSpace} className="flex flex-col gap-4">
-                                    <label className="font-semibold mb-1 block mt-2 text-gray-700">Space Name:</label>
+                                <form
+                                    onSubmit={handleCreateSpace}
+                                    className="flex flex-col gap-4"
+                                >
+                                    <label className="font-semibold mb-1 block mt-2 text-gray-700">
+                                        Space Name:
+                                    </label>
                                     <input
                                         type="text"
                                         value={newSpaceName}
@@ -524,48 +585,79 @@ export default function Dashboard() {
                                         className="p-3 rounded-md border border-gray-300 text-base w-full box-border focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         required
                                     />
-
-                                    <label className="font-semibold mb-1 block mt-2 text-gray-700">Choose a Map:</label>
-                                    <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-4 mb-5 p-2 border border-gray-200 rounded-md bg-white">
+                    
+                                    <label className="font-semibold mb-1 block mt-2 text-gray-700">
+                                        Choose a Map:
+                                    </label>
+                                    <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-4 mb-5 p-2 border border-gray-200 rounded-md bg-white ">
                                         {availableMaps.length === 0 ? (
-                                            <p className="text-gray-500 col-span-full text-center">No maps available. Please add maps to your backend.</p>
+                                            <p className="text-gray-500 col-span-full text-center">
+                                                No maps available. Please add maps to your backend.
+                                            </p>
                                         ) : (
                                             availableMaps.map((map) => (
                                                 <div
                                                     key={map.id}
                                                     className={`flex flex-col items-center p-2 rounded-lg bg-gray-50 cursor-pointer transition-transform duration-200 hover:scale-105 
-                                                        ${selectedMap?.id === map.id ? 'border-2 border-blue-500' : 'border border-gray-300'}`}
+                                                                ${selectedMap?.id === map.id ? "border-2 border-blue-500" : "border border-gray-300"}`}
                                                     onClick={() => setSelectedMap(map)}
                                                 >
-                                                    <img src={map.thumbnailUrl || 'https://placehold.co/100x75/E0E0E0/333333?text=No+Map'} alt={map.name} className="w-24 h-16 object-cover rounded-md mb-2" />
-                                                    <span className="text-sm font-medium text-gray-700 text-center">{map.name}</span>
+                                                    <img
+                                                        src={
+                                                            map.thumbnailUrl ||
+                                                            "https://placehold.co/100x75/E0E0E0/333333?text=No+Map"
+                                                        }
+                                                        alt={map.name}
+                                                        className="w-24 h-16 object-cover rounded-md mb-2"
+                                                    />
+                                                    <span className="text-xs font-medium text-gray-700 text-center">
+                                                        {map.name}
+                                                    </span>
                                                 </div>
                                             ))
                                         )}
                                     </div>
-
-                                    <label className="font-semibold mb-1 block mt-2 text-gray-700">Choose Your Avatar:</label>
+                    
+                                    <label className="font-semibold mb-1 block mt-2 text-gray-700">
+                                        Choose Your Avatar:
+                                    </label>
                                     <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-4 mb-5 p-2 border border-gray-200 rounded-md bg-white">
                                         {availableAvatars.length === 0 ? (
-                                            <p className="text-gray-500 col-span-full text-center">No avatars available.</p>
+                                            <p className="text-gray-500 col-span-full text-center">
+                                                No avatars available.
+                                            </p>
                                         ) : (
                                             availableAvatars.map((avatar) => (
                                                 <div
                                                     key={avatar.id}
                                                     className={`flex flex-col items-center p-2 rounded-lg bg-gray-50 cursor-pointer transition-transform duration-200 hover:scale-105 
-                                                        ${selectedAvatar?.id === avatar.id ? 'border-2 border-blue-500' : 'border border-gray-300'}`}
+                                                                ${selectedAvatar?.id === avatar.id ? "border-2 border-blue-500" : "border border-gray-300"}`}
                                                     onClick={() => setSelectedAvatar(avatar)}
                                                 >
-                                                    <img src={avatar.imageUrl} alt={avatar.name} className="w-16 h-16 object-contain rounded-full mb-1.5" />
-                                                    <span className="text-sm font-medium text-gray-700 text-center">{avatar.name}</span>
+                                                    <img
+                                                        src={avatar.imageUrl}
+                                                        alt={avatar.name}
+                                                        className="w-16 h-16 object-contain rounded-full mb-1.5"
+                                                    />
+                                                    <span className="font-medium text-gray-700 text-center text-xs">
+                                                        {avatar.name}
+                                                    </span>
                                                 </div>
                                             ))
                                         )}
                                     </div>
-
-                                    {createSpaceError && <p className="text-red-500 text-sm mt-1 text-center">{createSpaceError}</p>}
-
-                                    <button type="submit" disabled={creatingSpace || !selectedMap || !selectedAvatar} className="px-5 py-3 bg-blue-600 text-white font-bold rounded-md cursor-pointer text-base mt-5 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    
+                                    {createSpaceError && (
+                                        <p className="text-red-500 text-sm mt-1 text-center">
+                                            {createSpaceError}
+                                        </p>
+                                    )}
+                    
+                                    <button
+                                        type="submit"
+                                        disabled={creatingSpace || !selectedMap || !selectedAvatar}
+                                        className="px-5 py-3 bg-blue-600 text-white font-bold rounded-md cursor-pointer text-base mt-5 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
                                         {creatingSpace ? "Creating..." : "Create Space"}
                                     </button>
                                 </form>
@@ -573,27 +665,45 @@ export default function Dashboard() {
                         </div>
                     </div>
                 )}
-
                 {/* Section for Listing User's Spaces */}
                 <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50">
-                    <h3 className="text-xl font-semibold mb-4 text-gray-700">Your Spaces</h3>
+                    <h3 className="text-xl font-semibold mb-4 text-gray-700">
+                        Your Spaces
+                    </h3>
                     {spaces.length === 0 ? (
-                        <p className="text-gray-500 text-center">You haven't created any spaces yet. Create one above!</p>
+                        <p className="text-gray-500 text-center">
+                            You haven't created any spaces yet. Create one above!
+                        </p>
                     ) : (
                         <ul className="list-none p-0">
                             {spaces.map((space) => (
-                                <li key={space.id} className="flex flex-col sm:flex-row justify-between items-center p-3 border border-gray-200 rounded-md mb-2 bg-white shadow-sm">
+                                <li
+                                    key={space.id}
+                                    className="flex flex-col sm:flex-row justify-between items-center p-3 border border-gray-200 rounded-md mb-2 bg-white shadow-sm"
+                                >
                                     <div className="flex items-center gap-3 w-full sm:w-auto mb-2 sm:mb-0">
                                         {space.thumbnail && (
-                                            <img src={space.thumbnail} alt={space.name} className="w-16 h-12 object-cover rounded-md" />
+                                            <img
+                                                src={space.thumbnail}
+                                                alt={space.name}
+                                                className="w-16 h-12 object-cover rounded-md"
+                                            />
                                         )}
-                                        <span className="text-gray-800 font-medium">{space.name} ({space.width}x{space.height || 'auto'})</span>
+                                        <span className="text-gray-800 font-medium">
+                                            {space.name} ({space.width}x{space.height || "auto"})
+                                        </span>
                                     </div>
                                     <div className="flex gap-2 w-full sm:w-auto justify-end">
-                                        <button onClick={() => handleEnterSpace(space.id)} className="px-3 py-1.5 bg-blue-500 text-white font-bold rounded-md cursor-pointer text-sm hover:bg-blue-600 transition-colors">
+                                        <button
+                                            onClick={() => handleEnterSpace(space.id)}
+                                            className="px-3 py-1.5 bg-blue-500 text-white font-bold rounded-md cursor-pointer text-sm hover:bg-blue-600 transition-colors"
+                                        >
                                             Enter Space
                                         </button>
-                                        <button onClick={() => handleDeleteSpace(space.id)} className="px-3 py-1.5 bg-yellow-500 text-gray-800 font-bold rounded-md cursor-pointer text-sm hover:bg-yellow-600 transition-colors">
+                                        <button
+                                            onClick={() => handleDeleteSpace(space.id)}
+                                            className="px-3 py-1.5 bg-yellow-500 text-gray-800 font-bold rounded-md cursor-pointer text-sm hover:bg-yellow-600 transition-colors"
+                                        >
                                             Delete
                                         </button>
                                     </div>

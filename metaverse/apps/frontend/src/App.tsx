@@ -32,7 +32,7 @@ const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             // User IS NOT LOGGED IN
             // If they are NOT logged in and try to access a PROTECTED path
             if (!publicPaths.includes(currentPath)) {
-                navigate('/signin', { replace: true }); // Send them to signin
+                navigate('/', { replace: true }); // Send them to landing page
             }
         }
     }, [token, navigate, currentPath]);
