@@ -19,6 +19,9 @@ CREATE TABLE "User" (
     "isProfileComplete" BOOLEAN NOT NULL DEFAULT false,
     "provider" "AuthProvider" NOT NULL DEFAULT 'EMAIL',
     "providerId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "lastLoginAt" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );

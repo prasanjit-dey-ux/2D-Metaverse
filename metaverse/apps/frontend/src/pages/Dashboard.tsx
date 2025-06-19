@@ -154,7 +154,13 @@ export default function Dashboard() {
         fetchDashboardData();
         // ESLint fix: Include selectedMap and selectedAvatar in dependencies because they are used in the initial selection logic
         // Also include navigate for consistency, though it's stable.
-    }, [navigate, selectedMap, selectedAvatar]);
+    }, [navigate]);
+
+    useEffect(() => {
+        if (!selectedAvatar && availableAvatars.length > 0) {
+            setSelectedAvatar(availableAvatars[0]);
+        }
+    }, [selectedAvatar, availableAvatars]);
 
 
     // Function to handle creating a new space
@@ -366,14 +372,14 @@ export default function Dashboard() {
     };
 
     // Render loading state
-    if (loading) {
+     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white font-pixel">
                 <div className="text-xl font-semibold">Loading dashboard...</div>
-                <div className="mt-4 animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                <div className="mt-4 animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-600"></div>
             </div>
         );
-    }
+    } 
 
     // Render error state
     if (error) {
@@ -392,16 +398,16 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen bg-metaverse-bg flex flex-col font-pixel">
             {/* Top Navbar */}
-            <nav className="fixed top-0 left-0 w-full shadow-md p-4 flex justify-between items-center z-40 bg-metaverse-bg border-b border-white">
-                <div className="flex items-center gap-2">
+            <nav className="fixed top-0 left-0 w-full shadow-md p-4 flex justify-between items-center z-40 bg-metaverse-bg border-b border-[#a259ff] drop-shadow-[0_0_16px_#a259ff]">
+                <div className="flex items-center gap-3">
                     <span
-                        className="font-pixel text-xl tracking-tighter text-white bg-neon-green p-1 rounded-md"
+                        className="font-pixel text-xl tracking-tighter text-white bg-neon-violet shadow-neon-violet p-2 rounded-xl"
                         style={{ textShadow: "0 0 3px #fff" }}
                     >
-                        M2
+                        PV
                     </span>
                     <span 
-                    className="text-xl font-bold text-neon-green font-pixel ">
+                    className="text-xl font-bold text-white font-pixel ">
                         Pixelverse
                     </span>
                 </div>
@@ -423,7 +429,7 @@ export default function Dashboard() {
                     </button>
                     <button
                         onClick={handleLogout}
-                        className="px-3 py-2 bg-neon-green font-bold rounded-md cursor-pointer text-sm hover:bg- transition-colors hover:text-white"
+                        className="px-3 py-2 bg-white font-bold rounded-md cursor-pointer text-neon-violet text-sm hover-bg-neon-violet transition-colors hover:text-white"
                     >
                         Logout
                     </button>
@@ -437,7 +443,7 @@ export default function Dashboard() {
                     Welcome {displayUserName}!
                 </h2>
                 {/* Section for Joining a Space by ID */}
-                <div className="mb-8 p-6 border border-gray-500 rounded-lg bg-gray-900">
+                <div className="mb-8 p-6 border border-[#a259ff] rounded-lg bg-gray-900 drop-shadow-[0_0_16px_#a259ff]">
                     <h3 className="text-xl font-semibold mb-4 text-white">
                         Join Existing Space
                     </h3>
@@ -450,12 +456,12 @@ export default function Dashboard() {
                             value={joinSpaceId}
                             onChange={(e) => setJoinSpaceId(e.target.value)}
                             placeholder="Enter Space ID"
-                            className="flex-grow p-3 border border-gray-500 bg-gray-800 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-grow p-3 border border-gray-500 bg-gray-800 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-[#a259ff] placeholder-gray-400 text-white"
                             required
                         />
                         <button
                             type="submit"
-                            className="px-5 py-3 bg-gray-600 text-white font-bold rounded-md cursor-pointer text-base hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-5 py-3 text-white font-bold rounded-md cursor-pointer text-base hover:bg-[#ff65c3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-neon-violet drop-shadow-[0_0_16px_#a259ff]"
                             disabled={!selectedAvatar}
                         >
                             Join Space
@@ -465,10 +471,10 @@ export default function Dashboard() {
                         <p className="text-red-500 text-sm mt-1">{joinSpaceError}</p>
                     )}
             
-                    <label className="font-semibold mb-2 block mt-4 text-gray-700">
+                    <label className="font-semibold mb-2 block mt-8 text-white">
                         Select Your Avatar for Joining:
                     </label>
-                    <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-10 p-2 border border-gray-200 rounded-md bg-white">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-10 p-2 border border-gray-500 rounded-md bg-gray-800 mt-4">
                         {availableAvatars.length === 0 ? (
                             <p className="text-gray-500 text-center col-span-full">
                                 No avatars available.
@@ -477,8 +483,8 @@ export default function Dashboard() {
                             availableAvatars.map((avatar) => (
                                 <div
                                     key={avatar.id}
-                                    className={`flex w-24 flex-col items-center p-2 rounded-lg bg-gray-50 cursor-pointer transition-transform duration-200 hover:scale-105 
-                                        ${selectedAvatar?.id === avatar.id ? "border-2 border-blue-500" : "border border-gray-300"}`}
+                                    className={`flex w-24 flex-col items-center p-2 rounded-lg  cursor-pointer transition-transform duration-200 hover:scale-105 
+                                        ${selectedAvatar?.id === avatar.id ? "border-2 border-[#a259ff] drop-shadow-[0_0_16px_#a259ff] bg-neon-violet" : "border border-gray-500 "}`}
                                     onClick={() => setSelectedAvatar(avatar)}
                                 >
                                     <img
@@ -486,7 +492,7 @@ export default function Dashboard() {
                                         alt={avatar.name}
                                         className="w-16 h-16 object-contain rounded-full mb-1.5"
                                     />
-                                    <span className="text-xs font-medium text-gray-700">
+                                    <span className="text-xs font-medium text-white">
                                         {avatar.name}
                                     </span>
                                 </div>
@@ -495,52 +501,53 @@ export default function Dashboard() {
                     </div>
                 </div>
                 {/* Section for Creating a New Space (opens modal) */}
-                <div className="mb-8 p-4 border border-gray-200 rounded-lg shadow-xl bg-gray-50 flex items-center justify-between">
-                    <h3 className="text-xl font-semibold text-gray-700 font-pixel">
+                <div className="mb-8 p-4 pt-6 px-8 border border-[#a259ff] rounded-lg shadow-xl  items-center justify-between bg-metaverse-bg shadow-neon-violet">
+                    <h3 className="text-xl font-semibod text-white font-pixel">
                         Create New Space
                     </h3>
+                    <p className="text-gray-500 text-xs py-2">Start your own metaverse room</p>
                     <button
                         onClick={() => {
                             openCreateModal();
                             setJoinSpaceId("");
                             setJoinSpaceError(null);
                         }}
-                        className="px-2 py-2 bg-green-600 text-white font-bold rounded-md cursor-pointer text-lg block  hover:bg-green-700 transition-colors "
+                        className="my-6 px-2 py-2 bg-neon-violet text-white font-bold rounded-md cursor-pointer text-lg block transition-colors shadow-neon-violet hover:bg-[#ff65c3] w-full"
                     >
-                        Create New Space
+                        Create Space
                     </button>
                 </div>
                 {/* Modal for Creating a New Space */}
                 {isCreateModalOpen && (
-                    <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-                        <div className="bg-white p-8 rounded-lg shadow-2xl w-11/12 max-w-lg max-h-[90vh] overflow-y-auto relative">
+                    <div className="fixed inset-0 bg-black/70 bg-opacity-60 flex justify-center items-center z-50 p-4">
+                        <div className="bg-white p-8 rounded-lg shadow-2xl w-[560px] overflow-y-auto relative bg-metaverse-bg">
                             <div className="flex justify-between items-center mb-5 pb-2 border-b border-gray-200 ">
-                                <h3 className="text-xl font-bold text-gray-800">
+                                <h3 className="text-xl font-bold text-white">
                                     Create Your New Space
                                 </h3>
                                 <button
                                     onClick={closeCreateModal}
-                                    className="bg-transparent border-none text-gray-500 text-xl cursor-pointer hover:text-gray-800 transition-colors"
+                                    className="bg-transparent border-none text-neon-pink text-xl cursor-pointer hover:text-gray-800 transition-colors"
                                 >
                                     X
                                 </button>
                             </div>
                     
                             {sharedSpaceIdOnly ? ( // This condition now correctly checks sharedSpaceIdOnly
-                                <div className="flex flex-col items-center gap-4 p-5 bg-green-50 rounded-lg border border-green-300">
-                                    <p className="text-green-700 text-lg font-bold text-center mb-4">
+                                <div className="flex flex-col items-center gap-4 p-5 bg-metaverse-bg rounded-lg border border-[#a259ff] ">
+                                    <p className="text-neon-violet text-lg font-bold text-center mb-4">
                                         Space created successfully!
                                     </p>
                                     <div className="w-full text-center">
-                                        <p className="font-semibold text-gray-700 mb-2">Share this Space ID:</p>
-                                        <div className="flex items-center bg-gray-100 p-3 rounded-lg break-all text-sm">
-                                            <span className="flex-grow text-gray-800 text-left">
+                                        <p className="font-semibold text-gray-400 mb-2">Share this Space ID:</p>
+                                        <div className="flex items-center bg-gray-800 p-3 rounded-lg break-all text-sm">
+                                            <span className="flex-grow text-white text-left">
                                                 {sharedSpaceIdOnly} {/* Correctly displays sharedSpaceIdOnly */}
                                             </span>
                                             <button
                                                 // Correctly calls copyToClipboard with arguments
                                                 onClick={() => copyToClipboard(sharedSpaceIdOnly, "Space ID copied!")}
-                                                className="ml-3 px-3 py-1 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors text-xs"
+                                                className="ml-3 w-24 h-12 px-2 py-1 bg-neon-pink shadow-neon-pink text-white rounded-md hover:bg-[#a259ff] transition-colors text-xs cursor-pointer"
                                             >
                                                 Copy
                                             </button>
@@ -557,16 +564,16 @@ export default function Dashboard() {
                                                     showTemporaryMessage("Error: Cannot enter space (missing ID or avatar).", 'error');
                                                 }
                                             }}
-                                            className="px-5 py-2 bg-blue-600 text-white font-bold rounded-md cursor-pointer text-base hover:bg-blue-700 transition-colors flex-1"
+                                            className="px-5 py-2 bg-neon-violet shadow-neon-violet text-white font-bold rounded-md cursor-pointer text-base border border-neon-violet transition-colors flex-1 hover:bg-[#ff65c3]"
                                         >
-                                            Enter Space Now
+                                            Enter 
                                         </button>
-                                        <button
+                                        {/* <button
                                             onClick={closeCreateModal}
                                             className="px-5 py-2 bg-gray-500 text-white font-bold rounded-md cursor-pointer text-base hover:bg-gray-600 transition-colors flex-1"
                                         >
                                             Done
-                                        </button>
+                                        </button> */}
                                     </div>
                                 </div>
                             ) : (
@@ -574,7 +581,7 @@ export default function Dashboard() {
                                     onSubmit={handleCreateSpace}
                                     className="flex flex-col gap-4"
                                 >
-                                    <label className="font-semibold mb-1 block mt-2 text-gray-700">
+                                    <label className="font-semibold mb-1 block mt-2 text-white">
                                         Space Name:
                                     </label>
                                     <input
@@ -582,14 +589,14 @@ export default function Dashboard() {
                                         value={newSpaceName}
                                         onChange={(e) => setNewSpaceName(e.target.value)}
                                         placeholder="Enter space name"
-                                        className="p-3 rounded-md border border-gray-300 text-base w-full box-border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="p-3 rounded-md border border-gray-500 placeholder-gray-500 text-base w-full box-border text-white focus:outline-none focus:ring-2 focus:ring-[#a259ff]"
                                         required
                                     />
                     
-                                    <label className="font-semibold mb-1 block mt-2 text-gray-700">
+                                    <label className="font-semibold mb-1 block mt-2 text-white">
                                         Choose a Map:
                                     </label>
-                                    <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-4 mb-5 p-2 border border-gray-200 rounded-md bg-white ">
+                                    <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-4 mb-5 p-2 border  rounded-md bg-gray-800 border-gray-500">
                                         {availableMaps.length === 0 ? (
                                             <p className="text-gray-500 col-span-full text-center">
                                                 No maps available. Please add maps to your backend.
@@ -598,8 +605,8 @@ export default function Dashboard() {
                                             availableMaps.map((map) => (
                                                 <div
                                                     key={map.id}
-                                                    className={`flex flex-col items-center p-2 rounded-lg bg-gray-50 cursor-pointer transition-transform duration-200 hover:scale-105 
-                                                                ${selectedMap?.id === map.id ? "border-2 border-blue-500" : "border border-gray-300"}`}
+                                                    className={`flex flex-col items-center p-2 rounded-lg bg-gray-800 cursor-pointer transition-transform duration-200 hover:scale-105 
+                                                                ${selectedMap?.id === map.id ? "border-2 border-[#a259ff]" : "border-2 border-gray-300"}`}
                                                     onClick={() => setSelectedMap(map)}
                                                 >
                                                     <img
@@ -610,7 +617,7 @@ export default function Dashboard() {
                                                         alt={map.name}
                                                         className="w-24 h-16 object-cover rounded-md mb-2"
                                                     />
-                                                    <span className="text-xs font-medium text-gray-700 text-center">
+                                                    <span className="text-xs font-medium text-white text-center">
                                                         {map.name}
                                                     </span>
                                                 </div>
@@ -618,10 +625,10 @@ export default function Dashboard() {
                                         )}
                                     </div>
                     
-                                    <label className="font-semibold mb-1 block mt-2 text-gray-700">
+                                    <label className="font-semibold mb-1 block mt-2 text-white">
                                         Choose Your Avatar:
                                     </label>
-                                    <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-4 mb-5 p-2 border border-gray-200 rounded-md bg-white">
+                                    <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-4 mb-5 p-2 border border-gray-200 rounded-md bg-metaverse-bg">
                                         {availableAvatars.length === 0 ? (
                                             <p className="text-gray-500 col-span-full text-center">
                                                 No avatars available.
@@ -631,7 +638,7 @@ export default function Dashboard() {
                                                 <div
                                                     key={avatar.id}
                                                     className={`flex flex-col items-center p-2 rounded-lg bg-gray-50 cursor-pointer transition-transform duration-200 hover:scale-105 
-                                                                ${selectedAvatar?.id === avatar.id ? "border-2 border-blue-500" : "border border-gray-300"}`}
+                                                                ${selectedAvatar?.id === avatar.id ? "border-2 border-[#a259ff] shadow-neon-violet bg-neon-violet" : "border border-gray-300 bg-gray-800"}`}
                                                     onClick={() => setSelectedAvatar(avatar)}
                                                 >
                                                     <img
@@ -639,7 +646,7 @@ export default function Dashboard() {
                                                         alt={avatar.name}
                                                         className="w-16 h-16 object-contain rounded-full mb-1.5"
                                                     />
-                                                    <span className="font-medium text-gray-700 text-center text-xs">
+                                                    <span className="font-medium text-white text-center text-xs">
                                                         {avatar.name}
                                                     </span>
                                                 </div>
@@ -656,7 +663,7 @@ export default function Dashboard() {
                                     <button
                                         type="submit"
                                         disabled={creatingSpace || !selectedMap || !selectedAvatar}
-                                        className="px-5 py-3 bg-blue-600 text-white font-bold rounded-md cursor-pointer text-base mt-5 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-5 py-3 bg-neon-violet text-white font-bold rounded-md cursor-pointer text-base mt-5 hover:bg-[#ff65c3] shadow-neon-violet transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {creatingSpace ? "Creating..." : "Create Space"}
                                     </button>
@@ -666,8 +673,8 @@ export default function Dashboard() {
                     </div>
                 )}
                 {/* Section for Listing User's Spaces */}
-                <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50">
-                    <h3 className="text-xl font-semibold mb-4 text-gray-700">
+                <div className="mb-8 p-6 border rounded-lg bg-metaverse-bg shadow-neon-violet border-[#a259ff]">
+                    <h3 className="text-xl font-semibold mb-4 text-white">
                         Your Spaces
                     </h3>
                     {spaces.length === 0 ? (
@@ -679,7 +686,7 @@ export default function Dashboard() {
                             {spaces.map((space) => (
                                 <li
                                     key={space.id}
-                                    className="flex flex-col sm:flex-row justify-between items-center p-3 border border-gray-200 rounded-md mb-2 bg-white shadow-sm"
+                                    className="flex flex-col sm:flex-row justify-between items-center p-3 border border-gray-500 rounded-md mb-2 bg-gray-800 shadow-sm"
                                 >
                                     <div className="flex items-center gap-3 w-full sm:w-auto mb-2 sm:mb-0">
                                         {space.thumbnail && (
@@ -689,20 +696,20 @@ export default function Dashboard() {
                                                 className="w-16 h-12 object-cover rounded-md"
                                             />
                                         )}
-                                        <span className="text-gray-800 font-medium">
-                                            {space.name} ({space.width}x{space.height || "auto"})
+                                        <span className="text-white font-medium">
+                                            {space.name}
                                         </span>
                                     </div>
                                     <div className="flex gap-2 w-full sm:w-auto justify-end">
                                         <button
                                             onClick={() => handleEnterSpace(space.id)}
-                                            className="px-3 py-1.5 bg-blue-500 text-white font-bold rounded-md cursor-pointer text-sm hover:bg-blue-600 transition-colors"
+                                            className="px-3 py-1.5 bg-neon-violet shadow-neon-violet text-white font-bold rounded-md cursor-pointer text-sm hover:bg-[#ff65c3] transition-colors"
                                         >
                                             Enter Space
                                         </button>
                                         <button
                                             onClick={() => handleDeleteSpace(space.id)}
-                                            className="px-3 py-1.5 bg-yellow-500 text-gray-800 font-bold rounded-md cursor-pointer text-sm hover:bg-yellow-600 transition-colors"
+                                            className="px-3 py-1.5 bg-white text-gray-800 font-bold rounded-md cursor-pointer text-sm hover:bg-red-500 transition-colors hover:text-white"
                                         >
                                             Delete
                                         </button>

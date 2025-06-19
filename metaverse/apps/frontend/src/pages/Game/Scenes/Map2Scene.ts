@@ -31,7 +31,8 @@ export default class Map2Scene extends Phaser.Scene {
   private socket: any;
   private myId: string = "";
   private otherPlayers: { [id: string]: Phaser.Physics.Arcade.Sprite } = {};
-  // `loadedAvatarAnimations` tracks if animation sets for a specific avatar KEY have been created in Phaser.
+  // Store previous positions to detect movement
+  private otherPlayersLastPositions: { [id: string]: { x: number; y: number } } = {};
   private loadedAvatarAnimations: Set<string> = new Set(); 
 
   private privateAreaText?: Phaser.GameObjects.Text;
@@ -316,7 +317,7 @@ export default class Map2Scene extends Phaser.Scene {
     }
   }
 
-  // Refactored to handle new vs. existing players more robustly
+  // Fixed updateOtherPlayers method
   updateOtherPlayers(players: { [id: string]: PlayerData }) {
     const activePlayerIds = new Set(Object.keys(players));
     const currentOtherPlayerIds = new Set(Object.keys(this.otherPlayers));
@@ -326,14 +327,16 @@ export default class Map2Scene extends Phaser.Scene {
       if (!activePlayerIds.has(id)) {
         const spriteToRemove = this.otherPlayers[id];
         if (spriteToRemove) {
-            spriteToRemove.destroy();
-            // FIX: Destroy the associated username text when player leaves
+            // FIXED: Properly destroy username text when player leaves
             const usernameText = spriteToRemove.getData('usernameText') as Phaser.GameObjects.Text;
             if (usernameText) {
                 usernameText.destroy();
                 console.log(`Map2Scene: Destroyed username text for disconnected player ${id}.`);
             }
+            spriteToRemove.destroy();
             delete this.otherPlayers[id];
+            // Clean up last position tracking
+            delete this.otherPlayersLastPositions[id];
             console.log(`Map2Scene: Removed disconnected player ${id}.`);
         }
       }
@@ -350,6 +353,9 @@ export default class Map2Scene extends Phaser.Scene {
       // Handle NEW players: load asset, create animations, then create sprite
       if (!this.otherPlayers[id]) {
           console.log(`Map2Scene: NEW other player detected: ${id} (${data.username}).`);
+          // Initialize last position for new player
+          this.otherPlayersLastPositions[id] = { x: data.x, y: data.y };
+          
           // Check if spritesheet texture for this avatar is already loaded
           if (!this.sys.textures.exists(avatarKey)) {
               console.log(`Map2Scene: Queuing spritesheet '${avatarKey}' for new player ${id}.`);
@@ -361,7 +367,7 @@ export default class Map2Scene extends Phaser.Scene {
               this.load.once(`filecomplete-spritesheet-${avatarKey}`, () => {
                   console.log(`Map2Scene: Spritesheet '${avatarKey}' loaded for new player '${id}'.`);
                   // Ensure animations are created if they don't exist after loading
-                  if (!this.anims.get(`${avatarKey}-idle-down`)) { // Check if a common animation for this key exists
+                  if (!this.loadedAvatarAnimations.has(avatarKey)) {
                       createAvatarAnimations(this, avatarKey);
                       this.loadedAvatarAnimations.add(avatarKey);
                       console.log(`Map2Scene: Created animations for new player (on-demand): ${avatarKey}.`);
@@ -379,7 +385,7 @@ export default class Map2Scene extends Phaser.Scene {
               }
           } else {
               // Spritesheet already exists. Ensure animations are created.
-              if (!this.anims.get(`${avatarKey}-idle-down`)) {
+              if (!this.loadedAvatarAnimations.has(avatarKey)) {
                   createAvatarAnimations(this, avatarKey);
                   this.loadedAvatarAnimations.add(avatarKey);
                   console.log(`Map2Scene: Animations created for existing avatar texture (pre-loaded): ${avatarKey}.`);
@@ -391,34 +397,37 @@ export default class Map2Scene extends Phaser.Scene {
           // Handle EXISTING players: update position and animation
           const sprite = this.otherPlayers[id];
           const usernameText = sprite.getData('usernameText') as Phaser.GameObjects.Text;
+          
+          // FIXED: Determine if player is moving by comparing with STORED last position
+          const lastPos = this.otherPlayersLastPositions[id];
+          const isOtherMoving = lastPos && (Math.abs(lastPos.x - data.x) > 2 || Math.abs(lastPos.y - data.y) > 2);
+          
+          // Update stored position for next comparison
+          this.otherPlayersLastPositions[id] = { x: data.x, y: data.y };
 
-          // Always update position and text position
+          // Update sprite position
           sprite.setPosition(data.x, data.y);
           if (usernameText) {
               usernameText.setPosition(data.x, data.y - 60); // Adjust Y offset as needed
           }
 
-          // Determine animation key
-          // Check if player is moving by comparing current position to received position
-          // Using a small threshold to account for floating point inaccuracies
-          const isOtherMoving = Math.abs(sprite.x - data.x) > 0.1 || Math.abs(sprite.y - data.y) > 0.1;
+          // Determine animation key based on movement and direction
           const otherPlayerFacingDirection = data.direction || 'down';
           const animKey = isOtherMoving
             ? `${avatarKey}-walk-${otherPlayerFacingDirection}`
             : `${avatarKey}-idle-${otherPlayerFacingDirection}`;
 
-          // Crucial: Ensure animation exists before playing for existing players
-          // If animation doesn't exist, create it (it might be a very first movement packet)
-          if (!this.anims.get(animKey) && !this.loadedAvatarAnimations.has(avatarKey)) {
-              console.warn(`Map2Scene: Animation '${animKey}' not found for EXISTING player ${id}. Creating animations for ${avatarKey} now.`);
+          // Ensure animation exists before playing for existing players
+          if (!this.loadedAvatarAnimations.has(avatarKey)) {
+              console.warn(`Map2Scene: Animation set not found for EXISTING player ${id}. Creating animations for ${avatarKey} now.`);
               createAvatarAnimations(this, avatarKey);
               this.loadedAvatarAnimations.add(avatarKey);
           }
           
-          // Play animation if it's different from current OR if it was just created/confirmed to exist
+          // Play animation if it's different from current
           if (sprite.anims.currentAnim?.key !== animKey && this.anims.get(animKey)) {
             sprite.anims.play(animKey, true);
-            console.log(`Map2Scene: Player ${id} playing animation: ${animKey}`); 
+            console.log(`Map2Scene: Player ${id} playing animation: ${animKey} (moving: ${isOtherMoving})`); 
           } else if (!this.anims.get(animKey)) {
             console.warn(`Map2Scene: Animation '${animKey}' still NOT FOUND for player ${id}. Sprite will be static.`);
           }
@@ -442,8 +451,11 @@ export default class Map2Scene extends Phaser.Scene {
     otherPlayer.setCollideWorldBounds(true).setDepth(3); // Ensure depth for proper layering
     this.otherPlayers[id] = otherPlayer;
     
+    // Initialize last position tracking for this player
+    this.otherPlayersLastPositions[id] = { x: data.x, y: data.y };
+    
     const animKey = `${avatarKey}-idle-${data.direction || 'down'}`;
-    // Play initial animation. It *must* exist now due to the logic in createOrUpdateOtherPlayerSprite.
+    // Play initial animation. It *must* exist now due to the logic in updateOtherPlayers.
     if (this.anims.get(animKey)) { 
         otherPlayer.play(animKey, true);
         console.log(`Map2Scene: Other player '${id}' sprite created and playing animation: ${animKey}.`);
@@ -464,11 +476,9 @@ export default class Map2Scene extends Phaser.Scene {
     console.log(`Map2Scene: Username text created for player ${id}: '${data.username}'`);
   }
 
-
   private getAvatarKey(filename: string): string {
     return filename.split(".")[0];
   }
-
 
   private setupMonitorClick() {
     const existingMonitorObjects = this.map.getObjectLayer("Monitors")?.objects;
@@ -581,7 +591,6 @@ export default class Map2Scene extends Phaser.Scene {
         return;
     }
 
-
     const textX = receptionistObj.x! + 25;
     const textY = receptionistObj.y! - 20;
 
@@ -607,7 +616,6 @@ export default class Map2Scene extends Phaser.Scene {
 
     receptionist.play("receptionist-idle");
     console.log("Map2Scene: Receptionist sprite added and playing idle animation.");
-
   }
 
   private handleMusicMuteToggle() {
@@ -617,20 +625,45 @@ export default class Map2Scene extends Phaser.Scene {
               this.lastMusicVolume = music.volume;
               music.setVolume(0);
               console.log(`Map2Scene: Background Music muted. Stored volume: ${this.lastMusicVolume}`);
-          } else {
+            } else {
               music.setVolume(this.lastMusicVolume);
               console.log(`Map2Scene: Background Music unmuted. Restored volume: ${this.lastMusicVolume}`);
           }
-      } else {
-        console.warn("Map2Scene: Background music not initialized or does not have volume control.");
       }
   }
 
-  shutdown() {
-      console.log("Map2Scene: shutdown() called. Stopping music and cleaning up.");
-      this.backgroundMusic?.stop();
-      this.backgroundMusic?.destroy();
-      this.backgroundMusic = undefined;
-      this.sys.game.events.off('toggleMusicMute', this.handleMusicMuteToggle, this);
+  destroy() {
+    console.log("Map2Scene: destroy() called. Cleaning up resources...");
+    
+    // Clean up all other players and their username texts
+    Object.entries(this.otherPlayers).forEach(([id, sprite]) => {
+      const usernameText = sprite.getData('usernameText') as Phaser.GameObjects.Text;
+      if (usernameText) {
+        usernameText.destroy();
+        console.log(`Map2Scene: Destroyed username text for player ${id} during scene cleanup.`);
+      }
+      sprite.destroy();
+    });
+    this.otherPlayers = {};
+    this.otherPlayersLastPositions = {};
+    
+    // Clean up socket listeners
+    if (this.socket) {
+      this.socket.off("playersUpdate");
+      this.socket.off("chatInputFocused");
+      this.socket.off("chatInputBlurred");
+      console.log("Map2Scene: Socket listeners cleaned up.");
+    }
+    
+    // Clean up music
+    if (this.backgroundMusic) {
+      this.backgroundMusic.stop();
+      this.backgroundMusic.destroy();
+    }
+    
+    // Clean up game events
+    this.sys.game.events.off('toggleMusicMute', this.handleMusicMuteToggle, this);
+    
+    super.destroy();
   }
 }
