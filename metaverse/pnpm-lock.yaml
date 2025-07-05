@@ -184,7 +184,7 @@ importers:
         specifier: 6.8.2
         version: 6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3)
       prisma:
-        specifier: ^6.7.0
+        specifier: ^6.8.2
         version: 6.8.2(typescript@5.8.3)
 
   packages/email:
