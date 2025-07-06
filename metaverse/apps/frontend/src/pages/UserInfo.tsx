@@ -169,17 +169,17 @@ export default function UserInfo() { // Renamed from UserInfoForm
     const displayPreviewBannerImage = formData.bannerImageUrl || "https://placehold.co/600x200/cccccc/000000?text=Banner";
 
     return (
-        <div className="min-h-screen flex flex-col lg:flex-row bg-gray-100 font-sans">
+        <div className="h-screen w-screen flex flex-col lg:flex-row font-pixel bg-metaverse-bg">
             {/* Form Section */}
-            <div className="w-full lg:w-1/2 h-full overflow-y-auto bg-white px-8 py-10 lg:px-12 lg:py-16 shadow-lg lg:rounded-r-lg">
-                <h2 className="text-3xl font-extrabold mb-8 text-center text-gray-900">
+            <div className="w-full lg:w-1/2 h-full overflow-y-auto px-8 py-10 lg:px-12 lg:py-16 shadow-lg scrollbar-hide border-r  shadow-neon-violet">
+                <h2 className="text-3xl font-extrabold mb-8 text-center text-neon-violet text-shadow-neon-violet">
                     Set Up Your Profile
                 </h2>
-                <p className="text-center text-gray-600 mb-6">
+                <p className="text-center text-white mb-6">
                     Review and customize your identity in the Metaverse.
                 </p>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6 ">
                     {/* Display general error at the top of the form if it exists */}
                     {error && (
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
@@ -190,7 +190,7 @@ export default function UserInfo() { // Renamed from UserInfoForm
 
                     {/* Username */}
                     <div>
-                        <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="username" className="block text-sm font-semibold text-white mb-2">
                             Username <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -201,14 +201,14 @@ export default function UserInfo() { // Renamed from UserInfoForm
                             value={formData.username}
                             onChange={handleChange}
                             placeholder="Choose a unique username"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                            className="w-full px-4 py-3 border border-gray-500 focus:ring-2 focus:ring-[#a259ff] focus:outline-none rounded-lg transition duration-200 text-white bg-gray-800"
                         />
                         {fieldErrors.username && <p className="text-red-500 text-sm mt-2">{fieldErrors.username}</p>}
                     </div>
 
                     {/* Display Name */}
                     <div>
-                        <label htmlFor="displayName" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="displayName" className="block text-sm font-semibold text-white mb-2">
                             Display Name (Optional)
                         </label>
                         <input
@@ -218,14 +218,14 @@ export default function UserInfo() { // Renamed from UserInfoForm
                             value={formData.displayName ?? ''} // Ensure input is controlled with string
                             onChange={handleChange}
                             placeholder="How you want to be seen in the metaverse"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                            className="w-full px-4 py-3 border border-gray-500 focus:ring-2 focus:ring-[#a259ff] focus:outline-none rounded-lg transition duration-200 text-white bg-gray-800"
                         />
                         {fieldErrors.displayName && <p className="text-red-500 text-sm mt-2">{fieldErrors.displayName}</p>}
                     </div>
 
                     {/* Profile Image URL */}
                     <div>
-                        <label htmlFor="profileImageUrl" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="profileImageUrl" className="block text-sm font-semibold text-white mb-2">
                             Profile Image URL (Optional)
                         </label>
                         <input
@@ -235,14 +235,14 @@ export default function UserInfo() { // Renamed from UserInfoForm
                             value={formData.profileImageUrl ?? ''} // Ensure input is controlled with string
                             onChange={handleChange}
                             placeholder="e.g., https://example.com/my_profile.jpg"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                            className="w-full px-4 py-3 border border-gray-500 focus:ring-2 focus:ring-[#a259ff] focus:outline-none rounded-lg transition duration-200 text-white bg-gray-800"
                         />
                         {fieldErrors.profileImageUrl && <p className="text-red-500 text-sm mt-2">{fieldErrors.profileImageUrl}</p>}
                     </div>
 
                     {/* Banner Image URL */}
                     <div>
-                        <label htmlFor="bannerImageUrl" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="bannerImageUrl" className="block text-sm font-semibold text-white mb-2">
                             Banner Image URL (Optional)
                         </label>
                         <input
@@ -252,14 +252,14 @@ export default function UserInfo() { // Renamed from UserInfoForm
                             value={formData.bannerImageUrl ?? ''} // Ensure input is controlled with string
                             onChange={handleChange}
                             placeholder="e.g., https://example.com/my_banner.jpg"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                            className="w-full px-4 py-3 border border-gray-500 focus:ring-2 focus:ring-[#a259ff] focus:outline-none rounded-lg transition duration-200 text-white bg-gray-800"
                         />
                         {fieldErrors.bannerImageUrl && <p className="text-red-500 text-sm mt-2">{fieldErrors.bannerImageUrl}</p>}
                     </div>
 
                     {/* Bio */}
                     <div>
-                        <label htmlFor="bio" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="bio" className="block text-sm font-semibold text-white mb-2">
                             Bio (Optional)
                         </label>
                         <textarea
@@ -270,7 +270,7 @@ export default function UserInfo() { // Renamed from UserInfoForm
                             placeholder="Tell us about yourself (max 160 characters)"
                             maxLength={160}
                             rows={3}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 resize-y"
+                            className="w-full px-4 py-3 border border-gray-500 focus:ring-2 focus:ring-[#a259ff] focus:outline-none rounded-lg transition duration-200 bg-gray-800 resize-y text-white"
                         />
                         {fieldErrors.bio && <p className="text-red-500 text-sm mt-2">{fieldErrors.bio}</p>}
                     </div>
@@ -280,16 +280,16 @@ export default function UserInfo() { // Renamed from UserInfoForm
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-neon-violet hover-bg-neon-pink shadow-neon-violet text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed my-2"
                     >
-                        {loading ? "Saving Profile..." : "Save Profile & Continue"}
+                        {loading ? "Saving Profile..." : "Save Profile"}
                     </button>
                 </form>
             </div>
 
             {/* Live Preview Section */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-8 relative overflow-hidden">
-                <div className="w-full max-w-sm bg-white rounded-xl shadow-2xl overflow-hidden transform transition-transform duration-500 hover:scale-105">
+            <div className="w-full lg:w-1/2 lg:flex items-center justify-center bg-metaverse-card p-8 hidden">
+                <div className="w-full max-w-sm border border-gray-600 hover:shadow-[#a259ff] bg- rounded-xl shadow-2xl overflow-hidden transform transition-transform duration-500 hover:scale-105">
                     {/* Banner Image */}
                     <div className="relative h-40 bg-gray-200 overflow-hidden">
                         {displayPreviewBannerImage && (
@@ -311,16 +311,16 @@ export default function UserInfo() { // Renamed from UserInfoForm
                         <img
                             src={displayPreviewProfileImage}
                             alt="Profile Avatar Preview"
-                            className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg absolute -top-12 left-6"
+                            className="w-24 h-24 rounded-full object-cover border-4 border-[#0B1026] shadow-lg absolute -top-12 left-6"
                             onError={(e) => {
                                 (e.target as HTMLImageElement).src = "https://placehold.co/100x100/aabbcc/ffffff?text=Avatar+Error";
                             }}
                         />
                         
-                        <div className="mt-16"> {/* Space for avatar */}
-                            <h3 className="text-2xl font-bold text-gray-900">{displayPreviewName}</h3>
-                            <p className="text-md text-gray-600">@{displayPreviewUsername}</p>
-                            <p className="mt-4 text-gray-700 text-sm leading-relaxed">
+                        <div className="mt-12"> {/* Space for avatar */}
+                            <h3 className="text-2xl font-bold text-white">{displayPreviewName}</h3>
+                            <p className="text-md text-xs text-gray-600 mt-1">@{displayPreviewUsername}</p>
+                            <p className="mt-6 text-white text-sm leading-relaxed">
                                 {displayPreviewBio}
                             </p>
                         </div>
